@@ -15,48 +15,9 @@ extern "C" {
 #include <cmath>
 
 #include "grib2_grid_templates.h"
+#include "grib2_key.h"
 
 namespace fs = std::filesystem;
-
-struct Grib2Key {
-    static constexpr g2int IGNORE_INT = -1;
-    static constexpr float IGNORE_FLOAT = NAN;
-
-    Grib2Key(g2int discipline, g2int pdt_number, g2int param_category, g2int param_number,
-             g2int fixed_surface_1, float level_1, g2int fixed_surface_2, float level_2) : 
-                 discipline(discipline), pdt_number(pdt_number), param_category(param_category), param_number(param_number),
-                 fixed_surface_1(fixed_surface_1), level_1(level_1), fixed_surface_2(fixed_surface_2), level_2(level_2) {}
-
-    g2int discipline;
-    g2int pdt_number;
-    g2int param_category;
-    g2int param_number;
-    g2int fixed_surface_1;
-    float level_1;
-    g2int fixed_surface_2;
-    float level_2;
-
-    bool operator==(const Grib2Key& other) const;
-
-    private:
-    template<class T>
-    static inline bool should_ignore(T val) {
-        if constexpr (std::is_same_v<T, g2int>) {
-            return val == Grib2Key::IGNORE_INT;
-        }
-        else if constexpr (std::is_same_v<T, float>) {
-            return std::isnan(val);
-        }
-        else {
-            static_assert(!sizeof(T*), "Unknown type in Grib2Key::should_ignore()");
-        }
-    }
-
-    template<class T>
-    static inline bool param_equals(T val1, T val2) {
-        return Grib2Key::should_ignore(val1) || Grib2Key::should_ignore(val2) || val1 == val2;
-    }
-};
 
 class Grib2Field {
     public:
