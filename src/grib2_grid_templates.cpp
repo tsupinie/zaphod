@@ -3,6 +3,41 @@
 #include <iostream>
 
 #include "grib2_grid_templates.h"
+// #include "proj.h"
+
+
+NS_PROJ::crs::CRSNNPtr make_proj_crs(
+    const NS_PROJ::datum::EllipsoidNNPtr& ellipsoid, 
+    const NS_PROJ::operation::ConversionNNPtr& conversion
+) {
+    NS_PROJ::util::PropertyMap props;
+    props.set("name", "");
+
+    auto earth_cs = NS_PROJ::cs::EllipsoidalCS::createLongitudeLatitude(NS_PROJ::common::UnitOfMeasure::DEGREE);
+
+    auto prime_meridian = NS_PROJ::datum::PrimeMeridian::create(props, NS_PROJ::common::Angle(0));
+
+    auto datum = NS_PROJ::datum::GeodeticReferenceFrame::create(
+        props, ellipsoid, 
+        NS_PROJ::util::optional(std::string()), 
+        prime_meridian
+    );
+
+    auto proj_cs = NS_PROJ::cs::CartesianCS::createEastingNorthing(NS_PROJ::common::UnitOfMeasure::METRE);
+
+    auto base_crs = NS_PROJ::crs::GeographicCRS::create(props, datum, earth_cs);
+    return NS_PROJ::crs::ProjectedCRS::create(props, base_crs, conversion, proj_cs);
+}
+
+std::tuple<float, float> transform_point(float x_in, float y_in, NS_PROJ::crs::CRSNNPtr crs_from, NS_PROJ::crs::CRSNNPtr crs_to, PJ_CONTEXT* ctx) {
+    auto factory = NS_PROJ::operation::CoordinateOperationFactory::create();
+    auto op = factory->createOperation(crs_from, crs_to);
+
+    PJ_COORD coord = {{x_in, y_in, 0, HUGE_VAL}};
+    PJ_COORD coord_trans = op->coordinateTransformer(ctx)->transform(coord);
+
+    return {coord_trans.xy.x, coord_trans.xy.y};
+}
 
 
 std::shared_ptr<Grib2GridDef> Grib2GridDef::select_grid_def_template(g2int template_num, g2int* template_buf) {
@@ -23,47 +58,59 @@ Grib2GridDefEarthShape Grib2GridDefEarthShape::from_buffer(g2int* buf) {
     float earth_semimajor_src = pow(10, -buf[3]) * buf[4];
     float earth_semiminor_src = pow(10, -buf[5]) * buf[6];
 
-    Grib2GridDefEarthShape shp;
+    float earth_semimajor, earth_semiminor;
+    bool earth_is_sphere;
 
     switch (earth_shape) {
         case 0:
-            shp.earth_semimajor = shp.earth_semiminor = 6367470.f;
-            shp.earth_is_sphere = true;
+            earth_semimajor = earth_semiminor = 6367470.f;
+            earth_is_sphere = true;
             break;
         case 1:
-            shp.earth_semimajor = shp.earth_semiminor = earth_radius_src;
-            shp.earth_is_sphere = true;
+            earth_semimajor = earth_semiminor = earth_radius_src;
+            earth_is_sphere = true;
             break;
         case 2:
-            shp.earth_semimajor = 6378160.0;
-            shp.earth_semiminor = 6356775.0;
-            shp.earth_is_sphere = false;
+            earth_semimajor = 6378160.0;
+            earth_semiminor = 6356775.0;
+            earth_is_sphere = false;
             break;
         case 3:
-            shp.earth_semimajor = earth_semimajor_src * 1000;
-            shp.earth_semiminor = earth_semiminor_src * 1000;
-            shp.earth_is_sphere = false;
+            earth_semimajor = earth_semimajor_src * 1000;
+            earth_semiminor = earth_semiminor_src * 1000;
+            earth_is_sphere = false;
             break;
         case 4:
         case 5:
-            shp.earth_semimajor = 6378137.0;
-            shp.earth_semiminor = 6356752.314;
-            shp.earth_is_sphere = false;
+            earth_semimajor = 6378137.0;
+            earth_semiminor = 6356752.314;
+            earth_is_sphere = false;
             break;
         case 6:
-            shp.earth_semimajor = shp.earth_semiminor = 6371229.0;
-            shp.earth_is_sphere = true;
+            earth_semimajor = earth_semiminor = 6371229.0;
+            earth_is_sphere = true;
             break;
         case 7:
-            shp.earth_semimajor = earth_semimajor_src;
-            shp.earth_semiminor = earth_semiminor_src;
-            shp.earth_is_sphere = false;
+            earth_semimajor = earth_semimajor_src;
+            earth_semiminor = earth_semiminor_src;
+            earth_is_sphere = false;
             break;
         default:
             throw "Unknown earth shape";
     }
 
-    return shp;
+    return Grib2GridDefEarthShape(earth_semimajor, earth_semiminor, earth_is_sphere);
+}
+
+NS_PROJ::datum::EllipsoidNNPtr Grib2GridDefEarthShape::get_proj_ellipsoid() {
+    NS_PROJ::util::PropertyMap props;
+    props.set("name", "");
+
+    return NS_PROJ::datum::Ellipsoid::createTwoAxis(
+        props,
+        NS_PROJ::common::Length(this->earth_semimajor, NS_PROJ::common::UnitOfMeasure::METRE), 
+        NS_PROJ::common::Length(this->earth_semiminor, NS_PROJ::common::UnitOfMeasure::METRE)
+    );
 }
 
 Grib2GridDefSpatialGrid Grib2GridDefSpatialGrid::from_buffer(g2int* buf) {
@@ -84,22 +131,35 @@ Grib2GridDefScanFlags Grib2GridDefScanFlags::from_buffer(g2int* buf) {
 }
 
 Grib2GridDefLatLon Grib2GridDefLatLon::from_buffer(g2int* buf) {
-    Grib2GridDefLatLon def;
-    def.earth_shape = Grib2GridDefEarthShape::from_buffer(buf);
-    def.grid = Grib2GridDefSpatialGrid::from_buffer(buf + 7);
-    def.scan_flags = Grib2GridDefScanFlags::from_buffer(buf + 18);
-
     // Should take into account the basic angle division from the file at some point. For now, just assume 1e-6.
     const float angle_unit = 1e-6;
 
-    def.latitude_first = buf[11] * angle_unit;
-    def.longitude_first = buf[12] * angle_unit;
-    def.latitude_last = buf[14] * angle_unit;
-    def.longitude_last = buf[15] * angle_unit;
-    def.di = buf[16] * angle_unit;
-    def.dj = buf[17] * angle_unit;
+    return Grib2GridDefLatLon(
+        Grib2GridDefEarthShape::from_buffer(buf),
+        Grib2GridDefSpatialGrid::from_buffer(buf + 7),
+        Grib2GridDefScanFlags::from_buffer(buf + 18),
+        buf[11] * angle_unit,
+        buf[12] * angle_unit,
+        buf[14] * angle_unit,
+        buf[15] * angle_unit,
+        buf[16] * angle_unit,
+        buf[17] * angle_unit
+    );
+}
 
-    return def;
+NS_PROJ::crs::ProjectedCRSNNPtr Grib2GridDefLatLon::get_crs() {
+    NS_PROJ::util::PropertyMap props;
+    props.set("name", "");
+
+    auto conversion = NS_PROJ::operation::Conversion::createEquidistantCylindrical(props,
+        NS_PROJ::common::Angle(0),
+        NS_PROJ::common::Angle(0),
+        NS_PROJ::common::Length(0),
+        NS_PROJ::common::Length(0)
+    );
+
+    auto crs = make_proj_crs(this->earth_shape.get_proj_ellipsoid(), conversion);
+    return NN_CHECK_ASSERT(NS_PROJ::util::nn_dynamic_pointer_cast<NS_PROJ::crs::ProjectedCRS>(crs));
 }
 
 std::map<std::string, float> Grib2GridDefLatLon::get_proj_parameters() {
@@ -133,24 +193,39 @@ std::vector<float> Grib2GridDefLatLon::get_ys() {
 
 
 Grib2GridDefLambert Grib2GridDefLambert::from_buffer(g2int* buf) {
-    Grib2GridDefLambert def;
-    def.earth_shape = Grib2GridDefEarthShape::from_buffer(buf);
-    def.grid = Grib2GridDefSpatialGrid::from_buffer(buf + 7);
-    def.scan_flags = Grib2GridDefScanFlags::from_buffer(buf + 17);
-
     const float angle_unit = 1e-6;
     const float spacing_unit = 1e-3;
 
-    def.latitude_first = buf[9] * angle_unit;
-    def.longitude_first = buf[10] * angle_unit;
-    def.center_latitude = buf[12] * angle_unit;
-    def.standard_longitude = buf[13] * angle_unit;
-    def.standard_latitude_1 = buf[18] * angle_unit;
-    def.standard_latitude_2 = buf[19] * angle_unit;
-    def.di = buf[14] * spacing_unit;
-    def.dj = buf[15] * spacing_unit;
+    return Grib2GridDefLambert(
+        Grib2GridDefEarthShape::from_buffer(buf),
+        Grib2GridDefSpatialGrid::from_buffer(buf + 7),
+        Grib2GridDefScanFlags::from_buffer(buf + 17),
+        buf[9] * angle_unit,
+        buf[10] * angle_unit,
+        buf[12] * angle_unit,
+        buf[13] * angle_unit,
+        buf[18] * angle_unit,
+        buf[19] * angle_unit,
+        buf[14] * spacing_unit,
+        buf[15] * spacing_unit
+    );
+}
 
-    return def;
+NS_PROJ::crs::ProjectedCRSNNPtr Grib2GridDefLambert::get_crs() {
+    NS_PROJ::util::PropertyMap props;
+    props.set("name", "");
+
+    auto conversion = NS_PROJ::operation::Conversion::createLambertConicConformal_2SP(props,
+        NS_PROJ::common::Angle(this->center_latitude),
+        NS_PROJ::common::Angle(this->standard_longitude),
+        NS_PROJ::common::Angle(this->standard_latitude_1),
+        NS_PROJ::common::Angle(this->standard_latitude_2),
+        NS_PROJ::common::Length(0),
+        NS_PROJ::common::Length(0)
+    );
+
+    auto crs = make_proj_crs(this->earth_shape.get_proj_ellipsoid(), conversion);
+    return NN_CHECK_ASSERT(NS_PROJ::util::nn_dynamic_pointer_cast<NS_PROJ::crs::ProjectedCRS>(crs));
 }
 
 std::map<std::string, float> Grib2GridDefLambert::get_proj_parameters() {
@@ -159,8 +234,6 @@ std::map<std::string, float> Grib2GridDefLambert::get_proj_parameters() {
     params["lat_0"] = this->center_latitude;
     params["lat_1"] = this->standard_latitude_1;
     params["lat_2"] = this->standard_latitude_2;
-    params["lat_first"] = this->latitude_first;
-    params["lon_first"] = this->longitude_first;
     params["a"] = this->earth_shape.earth_semimajor;
     params["b"] = this->earth_shape.earth_semiminor;
     return params;

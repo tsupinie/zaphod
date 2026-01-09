@@ -10,10 +10,17 @@ endif()
 # set(Python_ROOT_DIR /users/tsupinie/software/miniconda3/envs/grefs2)
 
 # find_package(Python 3.8 COMPONENTS Interpreter ${DEV_MODULE} REQUIRED)
-find_library(G2C g2c)
-get_filename_component(G2CLIB ${G2C} DIRECTORY)
-get_filename_component(G2CROOT ${G2CLIB} DIRECTORY)
-include_directories(${G2CROOT}/include)
+find_package(g2c)
+
+find_package(PROJ CONFIG QUIET)
+if(NOT PROJ_FOUND)
+    message(STATUS "PROJ CMake config not found, attempting PkgConfig...")
+    pkg_check_modules(PROJ REQUIRED IMPORTED_TARGET proj)
+    if(NOT TARGET PROJ::proj)
+        add_library(PROJ::proj ALIAS PkgConfig::PROJ)
+    endif()
+endif()
+
 
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
@@ -30,7 +37,14 @@ file(
 add_library(grib2spc ${SOURCES})
 
 target_compile_options(grib2spc PRIVATE -std=c++17)
-
-target_link_libraries(grib2spc PRIVATE ${G2C} stdc++fs)
+target_link_libraries(grib2spc PRIVATE g2c::g2c stdc++fs)
 
 install(TARGETS grib2spc DESTINATION lib)
+
+include(CTest)
+
+add_executable(test_projection tests/test_projection.cpp)
+target_compile_options(test_projection PRIVATE -std=c++17)
+target_include_directories(test_projection PRIVATE src)
+target_link_libraries(test_projection PRIVATE g2c::g2c PROJ::proj)
+add_test(NAME test_projection COMMAND test_projection)
