@@ -35,6 +35,7 @@ class Grib2Field {
     std::string get_proj_type() const { return this->grid_def->get_proj_type(); };
     std::vector<float> get_xs() const { return this->grid_def->get_xs(); };
     std::vector<float> get_ys() const { return this->grid_def->get_ys(); };
+    std::tuple<std::vector<float>, std::vector<float>> get_lonlats() const { return this->grid_def->get_lonlats(); };
 
     private:
     std::shared_ptr<gribfield> field;
