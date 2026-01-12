@@ -8,12 +8,13 @@
 #include <proj/util.hpp>
 
 template <typename T>
-void print_ary_sample(std::vector<T> ary) {
+std::ostream& operator<<(std::ostream& stream, std::vector<T> vec) {
     for (size_t i = 0; i < 5; i++) {
-        std::cout << ary[i] << ", ";
+        stream << vec[i] << ", ";
     }
 
-    std::cout << "..." << std::endl;
+    stream << "..." << std::endl;
+    return stream;
 }
 
 int main() {
@@ -23,13 +24,11 @@ int main() {
 
     Grib2GridDefLambert lcc(earth_shape, grid, scan_flags, 38.5, -97.5, 38.5, 38.5, 21.138123, -122.719528, 3000., 3000.);
 
-    auto crs = lcc.get_crs();
-    auto crs_base = crs->baseCRS();
-
     PJ_CONTEXT *ctx = proj_context_create();
+    auto trans = lcc.get_fwd_transform(ctx);
 
     float x, y;
-    std::tie(x, y) = transform_point(-97.44, 35.18, crs_base, crs, ctx);
+    std::tie(x, y) = transform_point(-97.44, 35.18, trans);
 
     std::cout << x << " " << y << std::endl;
 
@@ -38,15 +37,22 @@ int main() {
     std::vector<float> xs = lcc.get_xs();
     std::vector<float> ys = lcc.get_ys();
 
-    print_ary_sample(xs);
-    print_ary_sample(ys);
+    std::cout << xs;
+    std::cout << ys;
 
+    std::vector<float> lats, lons;
+    std::tie(lons, lats) = lcc.get_latlons();
+
+    std::cout << lons;
+    std::cout << lats;
+
+    grid = {121, 81};
     Grib2GridDefLatLon latlon(earth_shape, grid, scan_flags, 20., -125., 60., -65., 0.5, 0.5);
     xs = latlon.get_xs();
     ys = latlon.get_ys();
 
-    print_ary_sample(xs);
-    print_ary_sample(ys);
+    std::cout << xs;
+    std::cout << ys;
 
     return 0;
 }

@@ -36,7 +36,7 @@ file(
 
 add_library(grib2spc ${SOURCES})
 
-target_compile_options(grib2spc PRIVATE -std=c++17)
+target_compile_options(grib2spc PRIVATE -std=c++17 -O3)
 target_link_libraries(grib2spc PRIVATE g2c::g2c stdc++fs)
 
 install(TARGETS grib2spc DESTINATION lib)
@@ -44,7 +44,7 @@ install(TARGETS grib2spc DESTINATION lib)
 include(CTest)
 
 add_executable(test_projection tests/test_projection.cpp)
-target_compile_options(test_projection PRIVATE -std=c++17)
+target_compile_options(test_projection PRIVATE -std=c++17 -O3)
 target_include_directories(test_projection PRIVATE src)
 target_link_libraries(test_projection PRIVATE g2c::g2c PROJ::proj)
 add_test(NAME test_projection COMMAND test_projection)

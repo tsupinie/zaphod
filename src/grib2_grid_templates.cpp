@@ -1,6 +1,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <chrono>
 
 #include "grib2_grid_templates.h"
 
@@ -28,14 +29,32 @@ NS_PROJ::crs::CRSNNPtr make_proj_crs(
     return NS_PROJ::crs::ProjectedCRS::create(props, base_crs, conversion, proj_cs);
 }
 
-std::tuple<float, float> transform_point(float x_in, float y_in, NS_PROJ::crs::CRSNNPtr crs_from, NS_PROJ::crs::CRSNNPtr crs_to, PJ_CONTEXT* ctx) {
+NS_PROJ::operation::CoordinateTransformerNNPtr make_transformer(NS_PROJ::crs::CRSNNPtr crs_from, NS_PROJ::crs::CRSNNPtr crs_to, PJ_CONTEXT* ctx) {
     auto factory = NS_PROJ::operation::CoordinateOperationFactory::create();
     auto op = factory->createOperation(crs_from, crs_to);
+    return op->coordinateTransformer(ctx);
+}
 
+std::tuple<float, float> transform_point(float x_in, float y_in, const NS_PROJ::operation::CoordinateTransformerNNPtr& trans) {
     PJ_COORD coord = {{x_in, y_in, 0, HUGE_VAL}};
-    PJ_COORD coord_trans = op->coordinateTransformer(ctx)->transform(coord);
+    PJ_COORD coord_trans = trans->transform(coord);
 
     return {coord_trans.xy.x, coord_trans.xy.y};
+}
+
+
+NS_PROJ::operation::CoordinateTransformerNNPtr Grib2GridDef::get_fwd_transform(PJ_CONTEXT* ctx) {
+    auto crs = this->get_crs();
+    auto base_crs = crs->baseCRS();
+
+    return make_transformer(base_crs, crs, ctx);
+}
+
+NS_PROJ::operation::CoordinateTransformerNNPtr Grib2GridDef::get_inv_transform(PJ_CONTEXT* ctx) {
+    auto crs = this->get_crs();
+    auto base_crs = crs->baseCRS();
+
+    return make_transformer(crs, base_crs, ctx);
 }
 
 
@@ -150,6 +169,7 @@ NS_PROJ::crs::ProjectedCRSNNPtr Grib2GridDefLatLon::get_crs() {
     NS_PROJ::util::PropertyMap props;
     props.set("name", "");
 
+    // This is hard coded to convert to a cartesian space, but for lat/lon projections, I don't actually want to do this.
     auto conversion = NS_PROJ::operation::Conversion::createEquidistantCylindrical(props,
         NS_PROJ::common::Angle(0),
         NS_PROJ::common::Angle(0),
@@ -188,6 +208,28 @@ std::vector<float> Grib2GridDefLatLon::get_ys() {
     }
 
     return ys;
+}
+
+std::tuple<std::vector<float>, std::vector<float>> Grib2GridDefLatLon::get_latlons() {
+    std::vector<float> lons(this->grid.ni * this->grid.nj);
+    std::vector<float> lats(this->grid.ni * this->grid.nj);
+
+    const float inc_sign_lon = this->scan_flags.first_col_is_west ? 1 : -1;
+    const float inc_sign_lat = this->scan_flags.first_row_is_south ? 1 : -1;
+
+    for (size_t j = 0; j < this->grid.nj; j++) {
+        float lat = this->latitude_first + inc_sign_lat * j * this->dj;
+
+        for (size_t i = 0; i < this->grid.ni; i++) {
+            float lon = this->longitude_first + inc_sign_lon * i * this->di;
+
+            size_t idx = i + this->grid.ni * j;
+            lons[idx] = lon;
+            lats[idx] = lat;
+        } 
+    }
+
+    return std::tuple<std::vector<float>, std::vector<float>>(lons, lats);
 }
 
 
@@ -240,13 +282,11 @@ std::map<std::string, float> Grib2GridDefLambert::get_proj_parameters() {
 
 // Should get_xs() and get_ys() be (largely) implemented in the base class?
 std::vector<float> Grib2GridDefLambert::get_xs() {
-    auto crs = this->get_crs();
-    auto base_crs = crs->baseCRS();
-
     PJ_CONTEXT *ctx = proj_context_create();
+    auto trans = this->get_fwd_transform(ctx);
 
     float x_first, y_first;
-    std::tie(x_first, y_first) = transform_point(this->longitude_first, this->latitude_first, base_crs, crs, ctx);
+    std::tie(x_first, y_first) = transform_point(this->longitude_first, this->latitude_first, trans);
 
     std::vector<float> xs(this->grid.ni);
     const float inc_sign = this->scan_flags.first_col_is_west ? 1 : -1;
@@ -261,13 +301,11 @@ std::vector<float> Grib2GridDefLambert::get_xs() {
 }
 
 std::vector<float> Grib2GridDefLambert::get_ys() {
-    auto crs = this->get_crs();
-    auto base_crs = crs->baseCRS();
-
     PJ_CONTEXT *ctx = proj_context_create();
+    auto trans = this->get_fwd_transform(ctx);
 
     float x_first, y_first;
-    std::tie(x_first, y_first) = transform_point(this->longitude_first, this->latitude_first, base_crs, crs, ctx);
+    std::tie(x_first, y_first) = transform_point(this->longitude_first, this->latitude_first, trans);
 
     std::vector<float> ys(this->grid.nj);
     const float inc_sign = this->scan_flags.first_row_is_south ? 1 : -1;
@@ -279,4 +317,34 @@ std::vector<float> Grib2GridDefLambert::get_ys() {
     proj_context_destroy(ctx);
 
     return ys;
+}
+
+std::tuple<std::vector<float>, std::vector<float>> Grib2GridDefLambert::get_latlons() {
+    PJ_CONTEXT *ctx = proj_context_create();
+    auto trans_fwd = this->get_fwd_transform(ctx);
+    auto trans_inv = this->get_inv_transform(ctx);
+
+    std::vector<float> lons(this->grid.ni * this->grid.nj);
+    std::vector<float> lats(this->grid.ni * this->grid.nj);
+
+    float x_first, y_first;
+    std::tie(x_first, y_first) = transform_point(this->longitude_first, this->latitude_first, trans_fwd);
+
+    const float inc_sign_i = this->scan_flags.first_col_is_west ? 1 : -1;
+    const float inc_sign_j = this->scan_flags.first_row_is_south ? 1 : -1;
+
+    for (size_t j = 0; j < this->grid.nj; j++) {
+        float y = y_first + inc_sign_j * j * this->dj;
+
+        for (size_t i = 0; i < this->grid.ni; i++) {
+            float x = x_first + inc_sign_i * i * this->di;
+
+            size_t idx = i + this->grid.ni * j;
+            std::tie(lons[idx], lats[idx]) = transform_point(x, y, trans_inv);
+        } 
+    }
+
+    proj_context_destroy(ctx);
+
+    return std::tuple<std::vector<float>, std::vector<float>>(lons, lats);
 }

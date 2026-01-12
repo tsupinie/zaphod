@@ -20,13 +20,19 @@ extern "C" {
 struct Grib2GridDef {
     virtual std::string get_proj_type() = 0;
     virtual std::map<std::string, float> get_proj_parameters() = 0;
-    // TAS: maybe later. Might be too complicated to implement in C++ in a limited time
-    // virtual std::tuple<arr_out_2d_t, arr_out_2d_t> get_latlons() = 0;
-    virtual NS_PROJ::crs::ProjectedCRSNNPtr get_crs() = 0;
+
+    
+    virtual std::tuple<std::vector<float>, std::vector<float>> get_latlons() = 0;
     virtual std::vector<float> get_xs() = 0;
     virtual std::vector<float> get_ys() = 0;
 
     static std::shared_ptr<Grib2GridDef> select_grid_def_template(g2int template_num, g2int* template_buf);
+
+    NS_PROJ::operation::CoordinateTransformerNNPtr get_fwd_transform(PJ_CONTEXT* ctx);
+    NS_PROJ::operation::CoordinateTransformerNNPtr get_inv_transform(PJ_CONTEXT* ctx);
+
+    protected:
+    virtual NS_PROJ::crs::ProjectedCRSNNPtr get_crs() = 0;
 };
 
 struct Grib2GridDefEarthShape {
@@ -97,11 +103,14 @@ struct Grib2GridDefLatLon : public Grib2GridDef {
 
     static Grib2GridDefLatLon from_buffer(g2int* buf);
 
-    NS_PROJ::crs::ProjectedCRSNNPtr get_crs();
     std::map<std::string, float> get_proj_parameters();
     std::string get_proj_type() { return "latlon"; };
+    std::tuple<std::vector<float>, std::vector<float>> get_latlons();
     std::vector<float> get_xs();
     std::vector<float> get_ys();
+
+    protected:
+    NS_PROJ::crs::ProjectedCRSNNPtr get_crs();
 };
 
 struct Grib2GridDefLambert : public Grib2GridDef {
@@ -134,13 +143,18 @@ struct Grib2GridDefLambert : public Grib2GridDef {
 
     static Grib2GridDefLambert from_buffer(g2int* buf);
 
-    NS_PROJ::crs::ProjectedCRSNNPtr get_crs();
+    
     std::map<std::string, float> get_proj_parameters();
     std::string get_proj_type() { return "lcc"; };
+    std::tuple<std::vector<float>, std::vector<float>> get_latlons();
     std::vector<float> get_xs();
     std::vector<float> get_ys();
+
+    protected:
+    NS_PROJ::crs::ProjectedCRSNNPtr get_crs();
 };
 
-std::tuple<float, float> transform_point(float x_in, float y_in, NS_PROJ::crs::CRSNNPtr crs_from, NS_PROJ::crs::CRSNNPtr crs_to, PJ_CONTEXT* ctx);
+std::tuple<float, float> transform_point(float x_in, float y_in, const NS_PROJ::operation::CoordinateTransformerNNPtr& trans);
+NS_PROJ::operation::CoordinateTransformerNNPtr make_transformer(NS_PROJ::crs::CRSNNPtr crs_from, NS_PROJ::crs::CRSNNPtr crs_to, PJ_CONTEXT* ctx);
 
 #endif
