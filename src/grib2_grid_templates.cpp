@@ -210,7 +210,7 @@ std::vector<float> Grib2GridDefLatLon::get_ys() {
     return ys;
 }
 
-std::tuple<std::vector<float>, std::vector<float>> Grib2GridDefLatLon::get_latlons() {
+std::tuple<std::vector<float>, std::vector<float>> Grib2GridDefLatLon::get_lonlats() {
     std::vector<float> lons(this->grid.ni * this->grid.nj);
     std::vector<float> lats(this->grid.ni * this->grid.nj);
 
@@ -319,7 +319,7 @@ std::vector<float> Grib2GridDefLambert::get_ys() {
     return ys;
 }
 
-std::tuple<std::vector<float>, std::vector<float>> Grib2GridDefLambert::get_latlons() {
+std::tuple<std::vector<float>, std::vector<float>> Grib2GridDefLambert::get_lonlats() {
     PJ_CONTEXT *ctx = proj_context_create();
     auto trans_fwd = this->get_fwd_transform(ctx);
     auto trans_inv = this->get_inv_transform(ctx);

@@ -63,7 +63,7 @@ int main() {
     std::cout << ys;
 
     std::vector<float> lats, lons;
-    std::tie(lons, lats) = lcc.get_latlons();
+    std::tie(lons, lats) = lcc.get_lonlats();
 
     std::cout << lons;
     std::cout << lats;

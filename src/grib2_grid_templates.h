@@ -22,7 +22,7 @@ struct Grib2GridDef {
     virtual std::map<std::string, float> get_proj_parameters() = 0;
 
     
-    virtual std::tuple<std::vector<float>, std::vector<float>> get_latlons() = 0;
+    virtual std::tuple<std::vector<float>, std::vector<float>> get_lonlats() = 0;
     virtual std::vector<float> get_xs() = 0;
     virtual std::vector<float> get_ys() = 0;
 
@@ -105,7 +105,7 @@ struct Grib2GridDefLatLon : public Grib2GridDef {
 
     std::map<std::string, float> get_proj_parameters();
     std::string get_proj_type() { return "latlon"; };
-    std::tuple<std::vector<float>, std::vector<float>> get_latlons();
+    std::tuple<std::vector<float>, std::vector<float>> get_lonlats();
     std::vector<float> get_xs();
     std::vector<float> get_ys();
 
@@ -146,7 +146,7 @@ struct Grib2GridDefLambert : public Grib2GridDef {
     
     std::map<std::string, float> get_proj_parameters();
     std::string get_proj_type() { return "lcc"; };
-    std::tuple<std::vector<float>, std::vector<float>> get_latlons();
+    std::tuple<std::vector<float>, std::vector<float>> get_lonlats();
     std::vector<float> get_xs();
     std::vector<float> get_ys();
 
