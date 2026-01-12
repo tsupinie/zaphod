@@ -3,7 +3,6 @@
 #include <iostream>
 
 #include "grib2_grid_templates.h"
-// #include "proj.h"
 
 
 NS_PROJ::crs::CRSNNPtr make_proj_crs(
@@ -239,30 +238,45 @@ std::map<std::string, float> Grib2GridDefLambert::get_proj_parameters() {
     return params;
 }
 
+// Should get_xs() and get_ys() be (largely) implemented in the base class?
 std::vector<float> Grib2GridDefLambert::get_xs() {
-    // XXX: This assumes 0, 0 is at the center of the grid, which is not the case in general. In general, need to use
-    //  latitude_first and longitude_first to find the corner, but this requires proj, which I don't want to deal with
-    //  right now.
+    auto crs = this->get_crs();
+    auto base_crs = crs->baseCRS();
+
+    PJ_CONTEXT *ctx = proj_context_create();
+
+    float x_first, y_first;
+    std::tie(x_first, y_first) = transform_point(this->longitude_first, this->latitude_first, base_crs, crs, ctx);
+
     std::vector<float> xs(this->grid.ni);
     const float inc_sign = this->scan_flags.first_col_is_west ? 1 : -1;
 
     for (size_t i = 0; i < this->grid.ni; i++) {
-        xs[i] = inc_sign * (i - (this->grid.ni - 1) / 2.f) * this->di;
+        xs[i] = x_first + inc_sign * i * this->di;
     }
+
+    proj_context_destroy(ctx);
 
     return xs;
 }
 
 std::vector<float> Grib2GridDefLambert::get_ys() {
-    // XXX: This assumes 0, 0 is at the center of the grid, which is not the case in general. In general, need to use
-    //  latitude_first and longitude_first to find the corner, but this requires proj, which I don't want to deal with
-    //  right now.
+    auto crs = this->get_crs();
+    auto base_crs = crs->baseCRS();
+
+    PJ_CONTEXT *ctx = proj_context_create();
+
+    float x_first, y_first;
+    std::tie(x_first, y_first) = transform_point(this->longitude_first, this->latitude_first, base_crs, crs, ctx);
+
     std::vector<float> ys(this->grid.nj);
     const float inc_sign = this->scan_flags.first_row_is_south ? 1 : -1;
 
     for (size_t j = 0; j < this->grid.nj; j++) {
-        ys[j] = inc_sign * (j - (this->grid.nj - 1) / 2.f) * this->dj;
+        ys[j] = y_first + inc_sign * j * this->dj;
     }
+
+    proj_context_destroy(ctx);
 
     return ys;
 }
