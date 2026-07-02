@@ -18,19 +18,13 @@ struct Grib2KeyIgnore {
     constexpr bool operator==(const Grib2KeyIgnore& other) const { return true; }
 };
 
-std::ostream& operator<<(std::ostream& stream, const Grib2KeyIgnore& key) {
-    stream << "<ignore>";
-    return stream;
-}
+std::ostream& operator<<(std::ostream& stream, const Grib2KeyIgnore& key);
 
 struct Grib2KeyNotPresent {
     constexpr bool operator==(const Grib2KeyNotPresent& other) const { return true; }
 };
 
-std::ostream& operator<<(std::ostream& stream, const Grib2KeyNotPresent& key) {
-    stream << "<not present>";
-    return stream;
-}
+std::ostream& operator<<(std::ostream& stream, const Grib2KeyNotPresent& key);
 
 template <typename T>
 using Grib2KeyVal = std::variant<Grib2KeyIgnore, Grib2KeyNotPresent, T>;
@@ -74,30 +68,6 @@ struct Grib2Key {
     }
 };
 
-bool Grib2Key::operator==(const Grib2Key& other) const {
-    const bool discipline_matches = Grib2Key::param_equals(this->discipline, other.discipline);
-    const bool pdt_number_matches = Grib2Key::param_equals(this->pdt_number, other.pdt_number);
-    const bool param_cat_matches = Grib2Key::param_equals(this->param_category, other.param_category);
-    const bool param_num_matches = Grib2Key::param_equals(this->param_number, other.param_number);
-    const bool surface_1_matches = Grib2Key::param_equals(this->fixed_surface_1, other.fixed_surface_1);
-    const bool level_1_matches = Grib2Key::param_equals(this->level_1, other.level_1);
-    const bool surface_2_matches = Grib2Key::param_equals(this->fixed_surface_2, other.fixed_surface_2);
-    const bool level_2_matches = Grib2Key::param_equals(this->level_2, other.level_2);
-
-    return discipline_matches && pdt_number_matches && param_cat_matches && param_num_matches &&
-        surface_1_matches && level_1_matches && surface_2_matches && level_2_matches;
-}
-
-std::ostream& operator<<(std::ostream& stream, const Grib2Key& key) {
-    stream << "Grib2Key { discipline=" << key.discipline << ", " <<
-                            "pdt_num=" << key.pdt_number << ", " <<
-                          "param_cat=" << key.param_category << ", " <<
-                          "param_num=" << key.param_number << ", " <<
-                           "surface1=" << key.fixed_surface_1 << ", " <<
-                             "level1=" << key.level_1 << ", " <<
-                           "surface2=" << key.fixed_surface_2 << ", " <<
-                             "level2=" << key.level_2 << " }";
-    return stream;
-}
+std::ostream& operator<<(std::ostream& stream, const Grib2Key& key);
 
 #endif
