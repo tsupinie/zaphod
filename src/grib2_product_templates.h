@@ -1,3 +1,5 @@
+#ifndef __GRIB2SPC_GRIB2_PRODUCT_TEMPLATES__
+#define __GRIB2SPC_GRIB2_PRODUCT_TEMPLATES__
 
 extern "C" {
     #include <grib2.h>
@@ -136,3 +138,5 @@ using Grib2ProductAnaFcst = Grib2Template<0, ProductKey, Grib2Descriptor<0, Grib
                                                          Grib2Descriptor<3, Grib2ProcessIdDescriptor>,
                                                          Grib2Descriptor<5, Grib2ForecastTimeDescriptor>,
                                                          Grib2Descriptor<9, Grib2LayerDescriptor>>;
+
+#endif

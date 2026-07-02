@@ -1,3 +1,5 @@
+#ifndef __GRIB2SPC_GRIB2_TEMPLATES__
+#define __GRIB2SPC_GRIB2_TEMPLATES__
 
 extern "C" {
     #include <grib2.h>
@@ -67,3 +69,5 @@ Grib2Template<N, Key, Descrs...> Grib2Template<N, Key, Descrs...>::from_buffer(c
     auto tup = std::make_tuple(Descrs::from_buffer(buf)...);
     return Grib2Template<N, Key, Descrs...>(tup);
 }
+
+#endif
