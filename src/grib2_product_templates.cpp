@@ -1,14 +1,15 @@
 
 #include "grib2_product_templates.h"
 
+#define GRIB2_PRODUCT_DEFINITION_CASE(name) \
+    case name::template_number: \
+        return std::make_shared<name>(name::from_buffer(template_buf));
+
 std::shared_ptr<Grib2ProductDef> select_product_def_template(g2int template_num, g2int* template_buf) {
     switch (template_num) {
-        case 0:
-            return std::make_shared<Grib2ProductAnaFcst>(Grib2ProductAnaFcst::from_buffer(template_buf));
-        case 1:
-            return std::make_shared<Grib2ProductEnsMember>(Grib2ProductEnsMember::from_buffer(template_buf));
-        case 8:
-            return std::make_shared<Grib2ProductAggregation>(Grib2ProductAggregation::from_buffer(template_buf));
+        GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductAnaFcst)
+        GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductEnsMember)
+        GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductAggregation)
         default:
             throw "Unknown grid template number";
     }
