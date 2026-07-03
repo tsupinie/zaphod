@@ -43,7 +43,7 @@ Grib2Field::Grib2Field(std::vector<char> buffer, g2int ifld) {
 }
 
 bool Grib2Field::matches(const std::vector<Grib2Key>& keys) const {
-    const Grib2Key key_to_match = this->product_def->get_key();
+    const Grib2Key key_to_match = this->product_def->get_key().and_discipline(this->field->discipline);
 
     for (auto it = keys.begin(); it != keys.end(); it++) {
         if (*it == key_to_match) return true;
