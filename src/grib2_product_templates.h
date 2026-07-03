@@ -104,25 +104,32 @@ Grib2LayerDescriptor Grib2LayerDescriptor::from_buffer(const g2int* buf) {
 }
 
 struct Grib2ProductDef {
-    virtual Grib2Key get_key() = 0;
+    virtual Grib2Key get_key() const = 0;
 
     template <size_t N, typename... Descrs>
-    Grib2Key get_key(const Grib2Template<N, Descrs...>& templ);
+    Grib2Key get_key(const Grib2Template<N, Descrs...>& templ) const;
+
+    virtual std::chrono::duration<unsigned int> get_forecast_time() const = 0;
+
+    template <size_t N, typename... Descrs>
+    std::chrono::duration<unsigned int> get_forecast_time(const Grib2Template<N, Descrs...>& templ) const;
 };
 
-// WTF is this .template syntax, C++?
-#define GET_FROM_DESCRIPTOR(descr_type, param_type, param_name) \
-    constexpr auto get_##param_name = [](const descr_type& descr)->Grib2KeyVal<param_type> { return descr.param_name; }; \
-    const auto param_name = templ.template do_with_descriptor<descr_type>(get_##param_name, Grib2KeyVal<param_type>(Grib2KeyNotPresent()));
-
 template <size_t N, typename... Descrs>
-Grib2Key Grib2ProductDef::get_key(const Grib2Template<N, Descrs...>& templ) {
-    GET_FROM_DESCRIPTOR(Grib2ParameterDescriptor, g2int, parameter_category)
-    GET_FROM_DESCRIPTOR(Grib2ParameterDescriptor, g2int, parameter_number)
-    GET_FROM_DESCRIPTOR(Grib2LayerDescriptor, g2int, surface_1_type)
-    GET_FROM_DESCRIPTOR(Grib2LayerDescriptor, float, surface_1_value)
-    GET_FROM_DESCRIPTOR(Grib2LayerDescriptor, g2int, surface_2_type)
-    GET_FROM_DESCRIPTOR(Grib2LayerDescriptor, float, surface_2_value)
+Grib2Key Grib2ProductDef::get_key(const Grib2Template<N, Descrs...>& templ) const {
+    Grib2KeyVal<g2int> parameter_category;
+    Grib2KeyVal<g2int> parameter_number;
+    Grib2KeyVal<g2int> surface_1_type;
+    Grib2KeyVal<float> surface_1_value;
+    Grib2KeyVal<g2int> surface_2_type;
+    Grib2KeyVal<float> surface_2_value;
+
+    GRIB2_TEMPLATE_GET_FROM_DESCRIPTOR_DEFAULT(Grib2ParameterDescriptor, parameter_category, Grib2KeyNotPresent())
+    GRIB2_TEMPLATE_GET_FROM_DESCRIPTOR_DEFAULT(Grib2ParameterDescriptor, parameter_number, Grib2KeyNotPresent())
+    GRIB2_TEMPLATE_GET_FROM_DESCRIPTOR_DEFAULT(Grib2LayerDescriptor, surface_1_type, Grib2KeyNotPresent())
+    GRIB2_TEMPLATE_GET_FROM_DESCRIPTOR_DEFAULT(Grib2LayerDescriptor, surface_1_value, Grib2KeyNotPresent())
+    GRIB2_TEMPLATE_GET_FROM_DESCRIPTOR_DEFAULT(Grib2LayerDescriptor, surface_2_type, Grib2KeyNotPresent())
+    GRIB2_TEMPLATE_GET_FROM_DESCRIPTOR_DEFAULT(Grib2LayerDescriptor, surface_2_value, Grib2KeyNotPresent())
 
     return Grib2Key(
         Grib2KeyIgnore(),
@@ -136,6 +143,16 @@ Grib2Key Grib2ProductDef::get_key(const Grib2Template<N, Descrs...>& templ) {
     );
 }
 
+template <size_t N, typename... Descrs>
+std::chrono::duration<unsigned int> Grib2ProductDef::get_forecast_time(const Grib2Template<N, Descrs...>& templ) const {
+    std::string err_msg = std::string("Forecast time not present in template ") + std::to_string(N);
+
+    std::chrono::duration<unsigned int> forecast_time;
+    GRIB2_TEMPLATE_GET_FROM_DESCRIPTOR(Grib2ForecastTimeDescriptor, forecast_time, err_msg);
+
+    return forecast_time;
+}
+
 std::shared_ptr<Grib2ProductDef> select_product_def_template(g2int template_num, g2int* template_buf);
 
 using Grib2ProductAnaFcstBase = Grib2Template<0, Grib2Descriptor<0, Grib2ParameterDescriptor>,
@@ -144,8 +161,9 @@ using Grib2ProductAnaFcstBase = Grib2Template<0, Grib2Descriptor<0, Grib2Paramet
                                                  Grib2Descriptor<9, Grib2LayerDescriptor>>;
 
 struct Grib2ProductAnaFcst : public Grib2ProductAnaFcstBase, public Grib2ProductDef {
-    Grib2ProductAnaFcst(Grib2ProductAnaFcstBase base) : Grib2ProductAnaFcstBase(base) {}
-    Grib2Key get_key() { return Grib2ProductDef::get_key(*this); };
+    Grib2ProductAnaFcst(const Grib2ProductAnaFcstBase& base) : Grib2ProductAnaFcstBase(base) {}
+    Grib2Key get_key() const { return Grib2ProductDef::get_key(*this); };
+    std::chrono::duration<unsigned int> get_forecast_time() const { return Grib2ProductDef::get_forecast_time(*this); };
     static Grib2ProductAnaFcst from_buffer(const g2int* buf) { return Grib2ProductAnaFcstBase::from_buffer(buf); };
 };
 

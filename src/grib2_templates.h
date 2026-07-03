@@ -68,4 +68,36 @@ Grib2Template<N, Descrs...> Grib2Template<N, Descrs...>::from_buffer(const g2int
     return Grib2Template<N, Descrs...>(tup);
 }
 
+struct Grib2TemplateNotPresent {
+    constexpr bool operator==(const Grib2TemplateNotPresent& other) const { return true; }
+};
+
+template <typename T>
+using Grib2TemplateVal = std::variant<Grib2TemplateNotPresent, T>;
+
+// WTF is this .template syntax, C++?
+#define GRIB2_TEMPLATE_GET_DESCRIPTOR_VARIANT(descr_type, param_name) \
+    typedef decltype(descr_type::param_name) ValueType_##param_name; \
+    using TemplateVal_##param_name = Grib2TemplateVal<ValueType_##param_name>; \
+    constexpr auto get_##param_name = [](const descr_type& descr)->TemplateVal_##param_name { return descr.param_name; }; \
+    const auto templ_##param_name = templ.template do_with_descriptor<descr_type>(get_##param_name, TemplateVal_##param_name(Grib2TemplateNotPresent()));
+
+#define GRIB2_TEMPLATE_GET_FROM_DESCRIPTOR(descr_type, param_name, error) \
+    GRIB2_TEMPLATE_GET_DESCRIPTOR_VARIANT(descr_type, param_name) \
+    \
+    if (std::holds_alternative<Grib2TemplateNotPresent>(templ_##param_name)) { \
+        throw error; \
+    } \
+    \
+    param_name = *std::get_if<ValueType_##param_name>(&templ_##param_name);
+
+#define GRIB2_TEMPLATE_GET_FROM_DESCRIPTOR_DEFAULT(descr_type, param_name, default_val) \
+    GRIB2_TEMPLATE_GET_DESCRIPTOR_VARIANT(descr_type, param_name) \
+    \
+    if (std::holds_alternative<Grib2TemplateNotPresent>(templ_##param_name)) { \
+        param_name = default_val; \
+    }\
+    \
+    param_name = *std::get_if<ValueType_##param_name>(&templ_##param_name);
+
 #endif

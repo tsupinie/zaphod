@@ -111,16 +111,7 @@ std::chrono::system_clock::duration Grib2Field::fcst_time() const {
         return valid_time - init_time;
     }
 
-    int fcst_time = this->field->ipdtmpl[8];
-    unsigned char units = this->field->ipdtmpl[7];
-
-    switch(units) {
-        case 0: return fcst_time * 1min;
-        case 1: return fcst_time * 1h;
-        case 2: return fcst_time * 24h;
-        case 13: return fcst_time * 1s;
-        default: throw "Unhandled time units";
-    }
+    return this->product_def->get_forecast_time();
 }
 
 std::chrono::system_clock::time_point Grib2Field::valid_datetime() const {
