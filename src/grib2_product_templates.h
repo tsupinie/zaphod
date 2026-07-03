@@ -9,6 +9,7 @@ extern "C" {
 
 #include "grib2_key.h"
 #include "grib2_templates.h"
+#include "grib2_utils.h"
 
 using namespace std::chrono_literals;
 
@@ -69,20 +70,7 @@ struct Grib2ForecastTimeDescriptor {
 };
 
 Grib2ForecastTimeDescriptor Grib2ForecastTimeDescriptor::from_buffer(const g2int* buf) {
-    unsigned int units = buf[2];
-    int fcst_time_raw = buf[3];
-
-    std::chrono::duration<unsigned int> fcst_time;
-
-    switch(units) {
-        case 0: fcst_time = fcst_time_raw * 1min; break;
-        case 1: fcst_time = fcst_time_raw * 1h; break;
-        case 2: fcst_time = fcst_time_raw * 24h; break;
-        case 13: fcst_time = fcst_time_raw * 1s; break;
-        default: throw "Unhandled time units";
-    }
-
-    return {buf[0], buf[1], fcst_time};
+    return {buf[0], buf[1], duration_from_buffer(buf + 2)};
 }
 
 struct Grib2LayerDescriptor {
@@ -100,6 +88,57 @@ Grib2LayerDescriptor Grib2LayerDescriptor::from_buffer(const g2int* buf) {
         value_from_buffer(buf + 1),
         buf[3],
         value_from_buffer(buf + 4)
+    };
+}
+
+struct Grib2EnsembleMemberDescriptor {
+    g2int ensemble_type;
+    g2int perturbation_num;
+    g2int number_of_members;
+
+    static Grib2EnsembleMemberDescriptor from_buffer(const g2int* buf);
+};
+
+Grib2EnsembleMemberDescriptor Grib2EnsembleMemberDescriptor::from_buffer(const g2int* buf) {
+    return {buf[0], buf[1], buf[2]};
+}
+
+struct Grib2AggregationDescriptor {
+    struct Spec {
+        constexpr static size_t n_elems = 6;
+
+        g2int statistical_process_type;
+        g2int time_increment_type;
+        std::chrono::duration<unsigned int> length_of_time_range;
+        std::chrono::duration<unsigned int> length_of_time_increment;
+    };
+
+    std::chrono::system_clock::time_point end_of_interval;
+    g2int number_of_specs;
+    g2int number_of_missing_values;
+    std::vector<Spec> specs;
+
+    static Grib2AggregationDescriptor from_buffer(const g2int* buf);
+};
+
+Grib2AggregationDescriptor Grib2AggregationDescriptor::from_buffer(const g2int* buf) {
+    g2int n_specs = buf[6];
+    std::vector<Spec> specs;
+
+    for (size_t i = 0; i < n_specs; i++) {
+        specs.push_back({
+            buf[8 + Spec::n_elems * i + 0],
+            buf[8 + Spec::n_elems * i + 1],
+            duration_from_buffer(buf + 8 + Spec::n_elems * i + 2),
+            duration_from_buffer(buf + 8 + Spec::n_elems * i + 4)
+        });
+    }
+
+    return {
+        time_point_from_buffer(buf),
+        n_specs,
+        buf[7],
+        specs
     };
 }
 
@@ -148,23 +187,48 @@ std::chrono::duration<unsigned int> Grib2ProductDef::get_forecast_time(const Gri
     std::string err_msg = std::string("Forecast time not present in template ") + std::to_string(N);
 
     std::chrono::duration<unsigned int> forecast_time;
-    GRIB2_TEMPLATE_GET_FROM_DESCRIPTOR(Grib2ForecastTimeDescriptor, forecast_time, err_msg);
+    GRIB2_TEMPLATE_GET_FROM_DESCRIPTOR_REQUIRED(Grib2ForecastTimeDescriptor, forecast_time, err_msg);
+
+    std::vector<Grib2AggregationDescriptor::Spec> specs;
+    GRIB2_TEMPLATE_GET_FROM_DESCRIPTOR(Grib2AggregationDescriptor, specs);
+
+    if (specs.size() > 0) {
+        forecast_time += specs[0].length_of_time_range;
+    }
 
     return forecast_time;
 }
 
 std::shared_ptr<Grib2ProductDef> select_product_def_template(g2int template_num, g2int* template_buf);
 
+#define GRIB2_PRODUCT_TEMPLATE(name) \
+    struct name : public name##Base, public Grib2ProductDef { \
+        name(const name##Base& base) : name##Base(base) {} \
+        Grib2Key get_key() const { return Grib2ProductDef::get_key(*this); }; \
+        std::chrono::duration<unsigned int> get_forecast_time() const { return Grib2ProductDef::get_forecast_time(*this); }; \
+        static name from_buffer(const g2int* buf) { return name##Base::from_buffer(buf); }; \
+    };
+
 using Grib2ProductAnaFcstBase = Grib2Template<0, Grib2Descriptor<0, Grib2ParameterDescriptor>,
                                                  Grib2Descriptor<3, Grib2ProcessIdDescriptor>,
                                                  Grib2Descriptor<5, Grib2ForecastTimeDescriptor>,
                                                  Grib2Descriptor<9, Grib2LayerDescriptor>>;
 
-struct Grib2ProductAnaFcst : public Grib2ProductAnaFcstBase, public Grib2ProductDef {
-    Grib2ProductAnaFcst(const Grib2ProductAnaFcstBase& base) : Grib2ProductAnaFcstBase(base) {}
-    Grib2Key get_key() const { return Grib2ProductDef::get_key(*this); };
-    std::chrono::duration<unsigned int> get_forecast_time() const { return Grib2ProductDef::get_forecast_time(*this); };
-    static Grib2ProductAnaFcst from_buffer(const g2int* buf) { return Grib2ProductAnaFcstBase::from_buffer(buf); };
-};
+GRIB2_PRODUCT_TEMPLATE(Grib2ProductAnaFcst)
 
+using Grib2ProductEnsMemberBase = Grib2Template<1, Grib2Descriptor<0, Grib2ParameterDescriptor>,
+                                                   Grib2Descriptor<3, Grib2ProcessIdDescriptor>,
+                                                   Grib2Descriptor<5, Grib2ForecastTimeDescriptor>,
+                                                   Grib2Descriptor<9, Grib2LayerDescriptor>,
+                                                   Grib2Descriptor<15, Grib2EnsembleMemberDescriptor>>;
+
+GRIB2_PRODUCT_TEMPLATE(Grib2ProductEnsMember)
+
+using Grib2ProductAggregationBase = Grib2Template<8, Grib2Descriptor<0, Grib2ParameterDescriptor>,
+                                                     Grib2Descriptor<3, Grib2ProcessIdDescriptor>,
+                                                     Grib2Descriptor<5, Grib2ForecastTimeDescriptor>,
+                                                     Grib2Descriptor<9, Grib2LayerDescriptor>,
+                                                     Grib2Descriptor<15, Grib2AggregationDescriptor>>;
+
+GRIB2_PRODUCT_TEMPLATE(Grib2ProductAggregation)
 #endif

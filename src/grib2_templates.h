@@ -82,7 +82,7 @@ using Grib2TemplateVal = std::variant<Grib2TemplateNotPresent, T>;
     constexpr auto get_##param_name = [](const descr_type& descr)->TemplateVal_##param_name { return descr.param_name; }; \
     const auto templ_##param_name = templ.template do_with_descriptor<descr_type>(get_##param_name, TemplateVal_##param_name(Grib2TemplateNotPresent()));
 
-#define GRIB2_TEMPLATE_GET_FROM_DESCRIPTOR(descr_type, param_name, error) \
+#define GRIB2_TEMPLATE_GET_FROM_DESCRIPTOR_REQUIRED(descr_type, param_name, error) \
     GRIB2_TEMPLATE_GET_DESCRIPTOR_VARIANT(descr_type, param_name) \
     \
     if (std::holds_alternative<Grib2TemplateNotPresent>(templ_##param_name)) { \
@@ -99,5 +99,12 @@ using Grib2TemplateVal = std::variant<Grib2TemplateNotPresent, T>;
     }\
     \
     param_name = *std::get_if<ValueType_##param_name>(&templ_##param_name);
+
+#define GRIB2_TEMPLATE_GET_FROM_DESCRIPTOR(descr_type, param_name) \
+    GRIB2_TEMPLATE_GET_DESCRIPTOR_VARIANT(descr_type, param_name) \
+    \
+    if (const ValueType_##param_name *maybe_##param_name = std::get_if<ValueType_##param_name>(&templ_##param_name)) { \
+        param_name = *maybe_##param_name; \
+    }\
 
 #endif

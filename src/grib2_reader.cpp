@@ -16,6 +16,7 @@ extern "C" {
 #include <arpa/inet.h> /* ntohl() function for Unix/Mac. */
 
 #include "grib2_reader.h"
+#include "grib2_utils.h"
 
 /** Byte swap 64-bit ints. This converts native-endian 8-byte ints into
  * big-endian 8-byte ints. */
@@ -26,19 +27,6 @@ namespace fs = std::filesystem;
 
 #define G2_EXPAND 1
 
-std::chrono::system_clock::time_point time_point_from_buffer(g2int* buf) {
-    std::tm t{};
-
-    t.tm_year = buf[0] - 1900;
-    t.tm_mon = buf[1] - 1;
-    t.tm_mday = buf[2];
-    t.tm_hour = buf[3];
-    t.tm_min = buf[4];
-    t.tm_sec = buf[5];
-    t.tm_isdst = -1; // Well, that's a few hours I'll never get back
-
-    return std::chrono::system_clock::from_time_t(std::mktime(&t));
-}
 
 Grib2Field::Grib2Field(std::vector<char> buffer, g2int ifld) {
     unsigned char *buffer_msg = reinterpret_cast<unsigned char*>(buffer.data());
@@ -104,13 +92,6 @@ std::chrono::system_clock::time_point Grib2Field::init_datetime() const {
 }
 
 std::chrono::system_clock::duration Grib2Field::fcst_time() const {
-    if (this->field->ipdtnum >= 8 && this->field->ipdtnum <= 14) {
-        // XXX: This may result in a stack overflow for certain grib files
-        auto init_time = this->init_datetime();
-        auto valid_time = time_point_from_buffer(&this->field->ipdtmpl[18]);
-        return valid_time - init_time;
-    }
-
     return this->product_def->get_forecast_time();
 }
 
