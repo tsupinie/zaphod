@@ -103,9 +103,11 @@ Grib2LayerDescriptor Grib2LayerDescriptor::from_buffer(const g2int* buf) {
     };
 }
 
-struct ProductKey {
+struct Grib2ProductDef {
+    virtual Grib2Key get_key() = 0;
+
     template <size_t N, typename... Descrs>
-    static Grib2Key get_key(const Grib2Template<N, ProductKey, Descrs...>& templ);
+    Grib2Key get_key(const Grib2Template<N, Descrs...>& templ);
 };
 
 // WTF is this .template syntax, C++?
@@ -114,7 +116,7 @@ struct ProductKey {
     const auto param_name = templ.template do_with_descriptor<descr_type>(get_##param_name, Grib2KeyVal<param_type>(Grib2KeyNotPresent()));
 
 template <size_t N, typename... Descrs>
-Grib2Key ProductKey::get_key(const Grib2Template<N, ProductKey, Descrs...>& templ) {
+Grib2Key Grib2ProductDef::get_key(const Grib2Template<N, Descrs...>& templ) {
     GET_FROM_DESCRIPTOR(Grib2ParameterDescriptor, g2int, parameter_category)
     GET_FROM_DESCRIPTOR(Grib2ParameterDescriptor, g2int, parameter_number)
     GET_FROM_DESCRIPTOR(Grib2LayerDescriptor, g2int, surface_1_type)
@@ -134,9 +136,17 @@ Grib2Key ProductKey::get_key(const Grib2Template<N, ProductKey, Descrs...>& temp
     );
 }
 
-using Grib2ProductAnaFcst = Grib2Template<0, ProductKey, Grib2Descriptor<0, Grib2ParameterDescriptor>,
-                                                         Grib2Descriptor<3, Grib2ProcessIdDescriptor>,
-                                                         Grib2Descriptor<5, Grib2ForecastTimeDescriptor>,
-                                                         Grib2Descriptor<9, Grib2LayerDescriptor>>;
+std::shared_ptr<Grib2ProductDef> select_product_def_template(g2int template_num, g2int* template_buf);
+
+using Grib2ProductAnaFcstBase = Grib2Template<0, Grib2Descriptor<0, Grib2ParameterDescriptor>,
+                                                 Grib2Descriptor<3, Grib2ProcessIdDescriptor>,
+                                                 Grib2Descriptor<5, Grib2ForecastTimeDescriptor>,
+                                                 Grib2Descriptor<9, Grib2LayerDescriptor>>;
+
+struct Grib2ProductAnaFcst : public Grib2ProductAnaFcstBase, public Grib2ProductDef {
+    Grib2ProductAnaFcst(Grib2ProductAnaFcstBase base) : Grib2ProductAnaFcstBase(base) {}
+    Grib2Key get_key() { return Grib2ProductDef::get_key(*this); };
+    static Grib2ProductAnaFcst from_buffer(const g2int* buf) { return Grib2ProductAnaFcstBase::from_buffer(buf); };
+};
 
 #endif

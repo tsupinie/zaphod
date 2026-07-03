@@ -51,22 +51,11 @@ Grib2Field::Grib2Field(std::vector<char> buffer, g2int ifld) {
     this->i_field = ifld;
 
     this->grid_def = Grib2GridDef::select_grid_def_template(this->field->igdtnum, this->field->igdtmpl);
+    this->product_def = select_product_def_template(this->field->ipdtnum, this->field->ipdtmpl);
 }
 
 bool Grib2Field::matches(const std::vector<Grib2Key>& keys) const {
-    float level_1 = pow(10, -this->field->ipdtmpl[10]) * this->field->ipdtmpl[11];
-    float level_2 = pow(10, -this->field->ipdtmpl[13]) * this->field->ipdtmpl[14];
-
-    const Grib2Key key_to_match(
-        this->field->discipline,
-        this->field->ipdtnum,
-        this->field->ipdtmpl[0],
-        this->field->ipdtmpl[1],
-        this->field->ipdtmpl[9],
-        level_1,
-        this->field->ipdtmpl[12],
-        level_2
-    );
+    const Grib2Key key_to_match = this->product_def->get_key();
 
     for (auto it = keys.begin(); it != keys.end(); it++) {
         if (*it == key_to_match) return true;

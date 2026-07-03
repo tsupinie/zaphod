@@ -16,6 +16,7 @@ extern "C" {
 
 #include "grib2_grid_templates.h"
 #include "grib2_key.h"
+#include "grib2_product_templates.h"
 
 namespace fs = std::filesystem;
 
@@ -39,6 +40,7 @@ class Grib2Field {
 
     private:
     std::shared_ptr<gribfield> field;
+    std::shared_ptr<Grib2ProductDef> product_def;
     std::shared_ptr<Grib2GridDef> grid_def;
     g2int i_field;
     std::vector<char> buffer;

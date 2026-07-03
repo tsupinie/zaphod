@@ -43,15 +43,15 @@ constexpr std::enable_if_t<!tuple_has_type<T, std::tuple<Tuple_t...>>::value, R>
     return default_value;
 }
 
-template <size_t N, typename Key, typename... Descrs>
+template <size_t N, typename... Descrs>
 struct Grib2Template {
     static constexpr size_t template_number = N;
     Grib2Template(std::tuple<typename Descrs::type...> descriptors) : descriptors(descriptors) {}
-    Grib2Template(const Grib2Template<N, Key, Descrs...>& other) : descriptors(other.descriptors) {}
+    Grib2Template(const Grib2Template<N, Descrs...>& other) : descriptors(other.descriptors) {}
 
     std::tuple<typename Descrs::type...> descriptors;
 
-    static Grib2Template<N, Key, Descrs...> from_buffer(const g2int* buf);
+    static Grib2Template<N, Descrs...> from_buffer(const g2int* buf);
     
     // template <typename Descr>
     // constexpr bool has();
@@ -60,14 +60,12 @@ struct Grib2Template {
     constexpr RetVal do_with_descriptor(Func&& func, RetVal default_value) const {
         return tuple_do_with_element<Descr>(this->descriptors, func, default_value);
     }
-
-    Grib2Key get_key() const { return Key::get_key(*this); }
 };
 
-template <size_t N, typename Key, typename... Descrs>
-Grib2Template<N, Key, Descrs...> Grib2Template<N, Key, Descrs...>::from_buffer(const g2int* buf) {
+template <size_t N, typename... Descrs>
+Grib2Template<N, Descrs...> Grib2Template<N, Descrs...>::from_buffer(const g2int* buf) {
     auto tup = std::make_tuple(Descrs::from_buffer(buf)...);
-    return Grib2Template<N, Key, Descrs...>(tup);
+    return Grib2Template<N, Descrs...>(tup);
 }
 
 #endif
