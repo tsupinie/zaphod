@@ -46,10 +46,12 @@ constexpr std::enable_if_t<!tuple_has_type<T, std::tuple<Tuple_t...>>::value, R>
 template <size_t N, typename... Descrs>
 struct Grib2Template {
     static constexpr size_t template_number = N;
-    Grib2Template(std::tuple<typename Descrs::type...> descriptors) : descriptors(descriptors) {}
+    typedef std::tuple<typename Descrs::type...> DescriptorTupleType;
+
+    Grib2Template(const DescriptorTupleType& descriptors) : descriptors(descriptors) {}
     Grib2Template(const Grib2Template<N, Descrs...>& other) : descriptors(other.descriptors) {}
 
-    std::tuple<typename Descrs::type...> descriptors;
+    DescriptorTupleType descriptors;
 
     static Grib2Template<N, Descrs...> from_buffer(const g2int* buf);
     

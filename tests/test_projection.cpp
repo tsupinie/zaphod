@@ -40,11 +40,12 @@ std::ostream& operator<<(std::ostream& stream, std::vector<T> vec) {
 }
 
 int main() {
-    Grib2GridDefEarthShape earth_shape(6371229., 6371229., true);
-    Grib2GridDefSpatialGrid grid = {1799, 1099};
-    Grib2GridDefScanFlags scan_flags = {false, true, true, false};
+    Grib2EarthShapeDescriptor earth_shape(6371229., 6371229., true);
+    Grib2SpatialGridDescriptor grid = {1799, 1099};
+    Grib2ScanFlagsDescriptor scan_flags = {false, true, true, false};
+    Grib2LambertProjectionDescriptor lcc_projection = {38.5, -97.5, 38.5, 38.5, 21.138123, -122.719528, 3000., 3000.};
 
-    Grib2GridDefLambert lcc(earth_shape, grid, scan_flags, 38.5, -97.5, 38.5, 38.5, 21.138123, -122.719528, 3000., 3000.);
+    Grib2GridDefLambert lcc({earth_shape, grid, lcc_projection, scan_flags});
 
     PJ_CONTEXT *ctx = proj_context_create();
     auto trans = lcc.get_fwd_transform(ctx);
@@ -69,7 +70,8 @@ int main() {
     std::cout << lats;
 
     grid = {121, 81};
-    Grib2GridDefLatLon latlon(earth_shape, grid, scan_flags, 20., -125., 60., -65., 0.5, 0.5);
+    Grib2LatLonProjectionDescriptor latlon_projection = {20., -125., 60., -65., 0.5, 0.5};
+    Grib2GridDefLatLon latlon({earth_shape, grid, latlon_projection, scan_flags});
     xs = latlon.get_xs();
     ys = latlon.get_ys();
 

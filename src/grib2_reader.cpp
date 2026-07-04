@@ -38,7 +38,7 @@ Grib2Field::Grib2Field(std::vector<char> buffer, g2int ifld) {
     this->buffer = buffer;
     this->i_field = ifld;
 
-    this->grid_def = Grib2GridDef::select_grid_def_template(this->field->igdtnum, this->field->igdtmpl);
+    this->grid_def = select_grid_def_template(this->field->igdtnum, this->field->igdtmpl);
     this->product_def = select_product_def_template(this->field->ipdtnum, this->field->ipdtmpl);
 }
 
