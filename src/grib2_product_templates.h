@@ -11,12 +11,6 @@ extern "C" {
 #include "grib2_templates.h"
 #include "grib2_utils.h"
 
-using namespace std::chrono_literals;
-
-
-float value_from_buffer(const g2int* buf) {
-    return pow(10, -buf[0]) * buf[1];
-}
 
 struct Grib2ParameterDescriptor {
     g2int parameter_category;
@@ -25,10 +19,6 @@ struct Grib2ParameterDescriptor {
 
     static Grib2ParameterDescriptor from_buffer(const g2int* buf);
 };
-
-Grib2ParameterDescriptor Grib2ParameterDescriptor::from_buffer(const g2int* buf) {
-    return {buf[0], buf[1], buf[2]};
-}
 
 struct Grib2ProbabilityDescriptor {
     g2int prob_number;
@@ -40,26 +30,12 @@ struct Grib2ProbabilityDescriptor {
     static Grib2ProbabilityDescriptor from_buffer(const g2int* buf);
 };
 
-Grib2ProbabilityDescriptor Grib2ProbabilityDescriptor::from_buffer(const g2int* buf) {
-    return {
-        buf[0],
-        buf[1],
-        buf[2],
-        value_from_buffer(buf + 3),
-        value_from_buffer(buf + 5)
-    };
-}
-
 struct Grib2ProcessIdDescriptor {
     g2int background_process_id;
     g2int process_id;
 
     static Grib2ProcessIdDescriptor from_buffer(const g2int* buf);
 };
-
-Grib2ProcessIdDescriptor Grib2ProcessIdDescriptor::from_buffer(const g2int* buf) {
-    return {buf[0], buf[1]};
-}
 
 struct Grib2ForecastTimeDescriptor {
     g2int data_cutoff_hours;
@@ -68,10 +44,6 @@ struct Grib2ForecastTimeDescriptor {
     
     static Grib2ForecastTimeDescriptor from_buffer(const g2int* buf);
 };
-
-Grib2ForecastTimeDescriptor Grib2ForecastTimeDescriptor::from_buffer(const g2int* buf) {
-    return {buf[0], buf[1], duration_from_buffer(buf + 2)};
-}
 
 struct Grib2LayerDescriptor {
     g2int surface_1_type;
@@ -82,15 +54,6 @@ struct Grib2LayerDescriptor {
     static Grib2LayerDescriptor from_buffer(const g2int* buf);
 };
 
-Grib2LayerDescriptor Grib2LayerDescriptor::from_buffer(const g2int* buf) {
-    return {
-        buf[0],
-        value_from_buffer(buf + 1),
-        buf[3],
-        value_from_buffer(buf + 4)
-    };
-}
-
 struct Grib2EnsembleMemberDescriptor {
     g2int ensemble_type;
     g2int perturbation_num;
@@ -98,10 +61,6 @@ struct Grib2EnsembleMemberDescriptor {
 
     static Grib2EnsembleMemberDescriptor from_buffer(const g2int* buf);
 };
-
-Grib2EnsembleMemberDescriptor Grib2EnsembleMemberDescriptor::from_buffer(const g2int* buf) {
-    return {buf[0], buf[1], buf[2]};
-}
 
 struct Grib2AggregationDescriptor {
     struct Spec {
@@ -120,27 +79,6 @@ struct Grib2AggregationDescriptor {
 
     static Grib2AggregationDescriptor from_buffer(const g2int* buf);
 };
-
-Grib2AggregationDescriptor Grib2AggregationDescriptor::from_buffer(const g2int* buf) {
-    g2int n_specs = buf[6];
-    std::vector<Spec> specs;
-
-    for (size_t i = 0; i < n_specs; i++) {
-        specs.push_back({
-            buf[8 + Spec::n_elems * i + 0],
-            buf[8 + Spec::n_elems * i + 1],
-            duration_from_buffer(buf + 8 + Spec::n_elems * i + 2),
-            duration_from_buffer(buf + 8 + Spec::n_elems * i + 4)
-        });
-    }
-
-    return {
-        time_point_from_buffer(buf),
-        n_specs,
-        buf[7],
-        specs
-    };
-}
 
 struct Grib2ProductDef {
     virtual Grib2Key get_key() const = 0;
