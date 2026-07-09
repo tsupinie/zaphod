@@ -11,6 +11,7 @@ extern "C" {
 #include <map>
 #include <string>
 #include <chrono>
+#include <iostream>
 
 #include <cmath>
 
@@ -23,7 +24,7 @@ namespace fs = std::filesystem;
 class Grib2Field {
     public:
     Grib2Field(std::vector<char> buffer, g2int ifld);
-    Grib2Field(const Grib2Field& other) : field{other.field}, grid_def{other.grid_def}, buffer(other.buffer), i_field(other.i_field) {}
+    Grib2Field(const Grib2Field& other) : field{other.field}, product_def(other.product_def), grid_def{other.grid_def}, buffer(other.buffer), i_field(other.i_field) {}
     std::vector<float> get_data();
 
     bool matches(const std::vector<Grib2Key>& keys) const;
@@ -37,6 +38,9 @@ class Grib2Field {
     std::vector<float> get_xs() const { return this->grid_def->get_xs(); };
     std::vector<float> get_ys() const { return this->grid_def->get_ys(); };
     std::tuple<std::vector<float>, std::vector<float>> get_lonlats() const { return this->grid_def->get_lonlats(); };
+    std::string get_product_summary_string() const { return this->product_def->get_summary_string(this->field->discipline); };
+    
+    friend std::ostream& operator<<(std::ostream& stream, const Grib2Field& field);
 
     private:
     std::shared_ptr<gribfield> field;
@@ -45,15 +49,20 @@ class Grib2Field {
     g2int i_field;
     std::vector<char> buffer;
 };
-    
-    
+
+std::ostream& operator<<(std::ostream& stream, const Grib2Field& field);
+
 class Grib2File {
     public:
+    Grib2File() {}
     Grib2File(const Grib2File& other) : field_list(other.field_list) {}
     
     static Grib2File scan_file(const std::string& fname);
 
     std::vector<Grib2Field> get_fields(const std::vector<Grib2Key>& keys);
+    std::vector<Grib2Field> get_fields() { return this->field_list; };
+
+    friend std::ostream& operator<<(std::ostream& stream, const Grib2File& g2f);
     
     private:
     Grib2File(std::vector<Grib2Field> field_list) : field_list(field_list) {}
@@ -61,5 +70,6 @@ class Grib2File {
     std::vector<Grib2Field> field_list;
 };
 
+std::ostream& operator<<(std::ostream& stream, const Grib2File& g2f);
 
 #endif

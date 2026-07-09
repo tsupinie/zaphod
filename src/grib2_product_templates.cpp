@@ -1,5 +1,8 @@
 
+#include <sstream>
+
 #include "grib2_product_templates.h"
+#include "grib2_table_defs.h"
 
 Grib2ParameterDescriptor Grib2ParameterDescriptor::from_buffer(const g2int* buf) {
     return {buf[0], buf[1], buf[2]};
@@ -31,6 +34,33 @@ Grib2LayerDescriptor Grib2LayerDescriptor::from_buffer(const g2int* buf) {
         buf[3],
         value_from_buffer(buf + 4)
     };
+}
+
+std::string Grib2LayerDescriptor::get_summary_string() const {
+    const auto level_table = g2_tables.get_table(4, 5);
+    const auto surface_1 = level_table.get_entry(this->surface_1_type);
+    const auto surface_2 = level_table.get_entry(this->surface_2_type);
+
+    std::stringstream ss;
+
+    if (surface_1.units != "" || this->surface_1_type == 104 || this->surface_1_type == 105 || this->surface_1_type == 111
+        || this->surface_1_type == 113 || this->surface_1_type == 115 || this->surface_1_type == 118 || this->surface_1_type == 119
+        || this->surface_1_type == 150 || this->surface_1_type == 151 || this->surface_1_type == 152) {
+        ss << this->surface_1_value;
+
+        if (this->surface_2_type != 255)
+            ss << "-" << this->surface_2_value;
+
+        ss << " ";
+    }
+
+    if (surface_1.units != "") {
+        ss << surface_1.units << " ";
+    }
+
+    ss << surface_1.meaning;
+
+    return ss.str();
 }
 
 Grib2EnsembleMemberDescriptor Grib2EnsembleMemberDescriptor::from_buffer(const g2int* buf) {

@@ -52,6 +52,7 @@ struct Grib2LayerDescriptor {
     float surface_2_value;
 
     static Grib2LayerDescriptor from_buffer(const g2int* buf);
+    std::string get_summary_string() const;
 };
 
 struct Grib2EnsembleMemberDescriptor {
@@ -85,6 +86,11 @@ struct Grib2ProductDef {
 
     template <size_t N, typename... Descrs>
     Grib2Key get_key(const Grib2Template<N, Descrs...>& templ) const;
+
+    virtual std::string get_summary_string(unsigned int discipline) const = 0;
+
+    template <size_t N, typename... Descrs>
+    std::string get_summary_string(const Grib2Template<N, Descrs...>& templ) const;
 
     virtual std::chrono::duration<unsigned int> get_forecast_time() const = 0;
 
@@ -137,12 +143,23 @@ std::chrono::duration<unsigned int> Grib2ProductDef::get_forecast_time(const Gri
     return forecast_time;
 }
 
+template <size_t N, typename... Descrs>
+std::string Grib2ProductDef::get_summary_string(const Grib2Template<N, Descrs...>& templ) const {
+    // As soon as I have a product definition template that doesn't have a Grib2LayerDescriptor in it this line will fail to compile.
+    const auto layer_descr = std::get<Grib2LayerDescriptor>(templ.descriptors);
+
+    std::string parameter = layer_descr.get_summary_string();
+
+    return parameter;
+}
+
 std::shared_ptr<Grib2ProductDef> select_product_def_template(g2int template_num, g2int* template_buf);
 
 #define GRIB2_PRODUCT_TEMPLATE(name) \
     struct name : public name##Base, public Grib2ProductDef { \
         name(const name##Base& base) : name##Base(base) {} \
         Grib2Key get_key() const { return Grib2ProductDef::get_key(*this); }; \
+        std::string get_summary_string(unsigned int discipline) const { return Grib2ProductDef::get_summary_string(*this); }; \
         std::chrono::duration<unsigned int> get_forecast_time() const { return Grib2ProductDef::get_forecast_time(*this); }; \
         static name from_buffer(const g2int* buf) { return name##Base::from_buffer(buf); }; \
     };

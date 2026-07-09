@@ -3,7 +3,6 @@ extern "C" {
     #include <grib2.h>
 }
 
-#include <iostream>
 #include <iomanip>
 #include <fstream>
 #include <filesystem>
@@ -99,6 +98,15 @@ std::chrono::system_clock::time_point Grib2Field::valid_datetime() const {
     return this->init_datetime() + this->fcst_time();
 }
 
+std::ostream& operator<<(std::ostream& stream, const Grib2Field& field) {
+    char time_str[100] = {};
+    auto init_dt = field.init_datetime();
+    std::time_t init_dt_c = std::chrono::system_clock::to_time_t(init_dt);
+    std::strftime(time_str, sizeof(time_str), "%Y%m%d%H", std::localtime(&init_dt_c));
+
+    stream << "d=" << time_str << ":" << field.noaa_abbreviation() << ":" << field.get_product_summary_string();
+    return stream;
+}
 
 
 Grib2File Grib2File::scan_file(const std::string& fname) {
@@ -177,4 +185,14 @@ std::vector<Grib2Field> Grib2File::get_fields(const std::vector<Grib2Key>& keys)
     }
 
     return vec;
+}
+
+std::ostream& operator<<(std::ostream& stream, const Grib2File& g2f) {
+    size_t imsg = 0;
+
+    for (auto it = g2f.field_list.begin(); it != g2f.field_list.end(); it++) {
+        std::cout << imsg << ":" << *it << std::endl;
+        imsg++;
+    }
+    return stream;
 }
