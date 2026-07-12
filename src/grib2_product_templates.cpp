@@ -95,8 +95,11 @@ Grib2AggregationDescriptor Grib2AggregationDescriptor::from_buffer(const g2int* 
 std::shared_ptr<Grib2ProductDef> select_product_def_template(g2int template_num, g2int* template_buf) {
     switch (template_num) {
         GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductAnaFcst)
-        GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductEnsMember)
-        GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductAggregation)
+        GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductEnsMem)
+        GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductProb)
+        GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductAgg)
+        GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductProbAgg)
+        GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductEnsMemAgg)
         default:
             throw "Unknown grid template number";
     }

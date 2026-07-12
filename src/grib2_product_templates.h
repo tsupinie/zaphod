@@ -171,19 +171,45 @@ using Grib2ProductAnaFcstBase = Grib2Template<0, Grib2Descriptor<0, Grib2Paramet
 
 GRIB2_PRODUCT_TEMPLATE(Grib2ProductAnaFcst)
 
-using Grib2ProductEnsMemberBase = Grib2Template<1, Grib2Descriptor<0, Grib2ParameterDescriptor>,
-                                                   Grib2Descriptor<3, Grib2ProcessIdDescriptor>,
-                                                   Grib2Descriptor<5, Grib2ForecastTimeDescriptor>,
-                                                   Grib2Descriptor<9, Grib2LayerDescriptor>,
-                                                   Grib2Descriptor<15, Grib2EnsembleMemberDescriptor>>;
+using Grib2ProductEnsMemBase = Grib2Template<1, Grib2Descriptor<0, Grib2ParameterDescriptor>,
+                                                Grib2Descriptor<3, Grib2ProcessIdDescriptor>,
+                                                Grib2Descriptor<5, Grib2ForecastTimeDescriptor>,
+                                                Grib2Descriptor<9, Grib2LayerDescriptor>,
+                                                Grib2Descriptor<15, Grib2EnsembleMemberDescriptor>>;
 
-GRIB2_PRODUCT_TEMPLATE(Grib2ProductEnsMember)
+GRIB2_PRODUCT_TEMPLATE(Grib2ProductEnsMem)
 
-using Grib2ProductAggregationBase = Grib2Template<8, Grib2Descriptor<0, Grib2ParameterDescriptor>,
-                                                     Grib2Descriptor<3, Grib2ProcessIdDescriptor>,
-                                                     Grib2Descriptor<5, Grib2ForecastTimeDescriptor>,
-                                                     Grib2Descriptor<9, Grib2LayerDescriptor>,
-                                                     Grib2Descriptor<15, Grib2AggregationDescriptor>>;
+using Grib2ProductProbBase = Grib2Template<5, Grib2Descriptor<0, Grib2ParameterDescriptor>,
+                                              Grib2Descriptor<3, Grib2ProcessIdDescriptor>,
+                                              Grib2Descriptor<5, Grib2ForecastTimeDescriptor>,
+                                              Grib2Descriptor<9, Grib2LayerDescriptor>,
+                                              Grib2Descriptor<15, Grib2ProbabilityDescriptor>>;
 
-GRIB2_PRODUCT_TEMPLATE(Grib2ProductAggregation)
+GRIB2_PRODUCT_TEMPLATE(Grib2ProductProb)
+
+using Grib2ProductAggBase = Grib2Template<8, Grib2Descriptor<0, Grib2ParameterDescriptor>,
+                                             Grib2Descriptor<3, Grib2ProcessIdDescriptor>,
+                                             Grib2Descriptor<5, Grib2ForecastTimeDescriptor>,
+                                             Grib2Descriptor<9, Grib2LayerDescriptor>,
+                                             Grib2Descriptor<15, Grib2AggregationDescriptor>>;
+
+GRIB2_PRODUCT_TEMPLATE(Grib2ProductAgg)
+
+using Grib2ProductProbAggBase = Grib2Template<9, Grib2Descriptor<0, Grib2ParameterDescriptor>,
+                                                 Grib2Descriptor<3, Grib2ProcessIdDescriptor>,
+                                                 Grib2Descriptor<5, Grib2ForecastTimeDescriptor>,
+                                                 Grib2Descriptor<9, Grib2LayerDescriptor>,
+                                                 Grib2Descriptor<15, Grib2ProbabilityDescriptor>,
+                                                 Grib2Descriptor<20, Grib2AggregationDescriptor>>;
+
+GRIB2_PRODUCT_TEMPLATE(Grib2ProductProbAgg)
+
+using Grib2ProductEnsMemAggBase = Grib2Template<11, Grib2Descriptor<0, Grib2ParameterDescriptor>,
+                                                    Grib2Descriptor<3, Grib2ProcessIdDescriptor>,
+                                                    Grib2Descriptor<5, Grib2ForecastTimeDescriptor>,
+                                                    Grib2Descriptor<9, Grib2LayerDescriptor>,
+                                                    Grib2Descriptor<15, Grib2EnsembleMemberDescriptor>,
+                                                    Grib2Descriptor<18, Grib2AggregationDescriptor>>;
+
+GRIB2_PRODUCT_TEMPLATE(Grib2ProductEnsMemAgg)
 #endif
