@@ -31,7 +31,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 file(
     GLOB SOURCES CONFIGURE_DEPENDS 
-    "src/*.cpp"
+    "src/zaphod/*.cpp"
 )
 
 include_directories(include)
