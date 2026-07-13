@@ -7,8 +7,6 @@ else()
   set(DEV_MODULE Development.Module)
 endif()
 
-# set(Python_ROOT_DIR /users/tsupinie/software/miniconda3/envs/grefs2)
-
 # find_package(Python 3.8 COMPONENTS Interpreter ${DEV_MODULE} REQUIRED)
 find_package(g2c)
 
@@ -42,5 +40,7 @@ target_compile_options(zaphod PRIVATE -std=c++17 -O3)
 target_link_libraries(zaphod PRIVATE g2c::g2c PROJ::proj) # stdc++fs
 
 install(TARGETS zaphod DESTINATION lib)
+
+add_subdirectory(src/nanobind)
 
 add_subdirectory(tests)
