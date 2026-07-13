@@ -210,6 +210,14 @@ std::map<std::string, float> Grib2GridDefLatLon::get_proj_parameters() const {
     return params;
 }
 
+g2int Grib2GridDefLatLon::get_ni() const {
+    return std::get<Grib2SpatialGridDescriptor>(this->descriptors).ni;
+}
+
+g2int Grib2GridDefLatLon::get_nj() const {
+    return std::get<Grib2SpatialGridDescriptor>(this->descriptors).nj;
+}
+
 std::vector<float> Grib2GridDefLatLon::get_xs() const {
     const auto grid = std::get<Grib2SpatialGridDescriptor>(this->descriptors);
     const auto scan_flags = std::get<Grib2ScanFlagsDescriptor>(this->descriptors);
@@ -299,6 +307,14 @@ std::map<std::string, float> Grib2GridDefLambert::get_proj_parameters() const {
     params["a"] = earth_shape.earth_semimajor;
     params["b"] = earth_shape.earth_semiminor;
     return params;
+}
+
+g2int Grib2GridDefLambert::get_ni() const {
+    return std::get<Grib2SpatialGridDescriptor>(this->descriptors).ni;
+}
+
+g2int Grib2GridDefLambert::get_nj() const {
+    return std::get<Grib2SpatialGridDescriptor>(this->descriptors).nj;
 }
 
 // Should get_xs() and get_ys() be (largely) implemented in the base class?

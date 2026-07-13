@@ -78,7 +78,8 @@ struct Grib2GridDef {
     virtual std::string get_proj_type() const = 0;
     virtual std::map<std::string, float> get_proj_parameters() const = 0;
 
-    
+    virtual g2int get_ni() const = 0;
+    virtual g2int get_nj() const = 0;
     virtual std::tuple<std::vector<float>, std::vector<float>> get_lonlats() const = 0;
     virtual std::vector<float> get_xs() const = 0;
     virtual std::vector<float> get_ys() const = 0;
@@ -102,6 +103,8 @@ std::shared_ptr<Grib2GridDef> select_grid_def_template(g2int template_num, g2int
         std::map<std::string, float> get_proj_parameters() const; \
         std::string get_proj_type() const { return type; }; \
         std::tuple<std::vector<float>, std::vector<float>> get_lonlats() const; \
+        g2int get_ni() const; \
+        g2int get_nj() const; \
         std::vector<float> get_xs() const; \
         std::vector<float> get_ys() const; \
         \
