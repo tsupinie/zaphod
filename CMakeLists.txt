@@ -43,22 +43,4 @@ target_link_libraries(zaphod PRIVATE g2c::g2c PROJ::proj) # stdc++fs
 
 install(TARGETS zaphod DESTINATION lib)
 
-include(CTest)
-
-add_executable(test_projection tests/test_projection.cpp)
-target_compile_options(test_projection PRIVATE -std=c++17 -O3)
-target_include_directories(test_projection PRIVATE src)
-target_link_libraries(test_projection PRIVATE zaphod)
-add_test(NAME test_projection COMMAND test_projection)
-
-add_executable(test_templates tests/test_templates.cpp)
-target_compile_options(test_templates PRIVATE -std=c++17)
-target_include_directories(test_templates PRIVATE src)
-target_link_libraries(test_templates PRIVATE zaphod)
-add_test(NAME test_templates COMMAND test_templates)
-
-add_executable(test_grib_reader tests/test_grib_reader.cpp)
-target_compile_options(test_grib_reader PRIVATE -std=c++17)
-target_include_directories(test_grib_reader PRIVATE src)
-target_link_libraries(test_grib_reader PRIVATE zaphod)
-add_test(NAME test_grib_reader COMMAND test_grib_reader)
+add_subdirectory(tests)
