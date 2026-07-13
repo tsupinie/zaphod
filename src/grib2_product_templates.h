@@ -1,5 +1,5 @@
-#ifndef __GRIB2SPC_GRIB2_PRODUCT_TEMPLATES__
-#define __GRIB2SPC_GRIB2_PRODUCT_TEMPLATES__
+#ifndef __ZAPHOD_GRIB2_PRODUCT_TEMPLATES__
+#define __ZAPHOD_GRIB2_PRODUCT_TEMPLATES__
 
 extern "C" {
     #include <grib2.h>
@@ -11,6 +11,7 @@ extern "C" {
 #include "grib2_templates.h"
 #include "grib2_utils.h"
 
+namespace zaphod {
 
 struct Grib2ParameterDescriptor {
     g2int parameter_category;
@@ -212,4 +213,7 @@ using Grib2ProductEnsMemAggBase = Grib2Template<11, Grib2Descriptor<0, Grib2Para
                                                     Grib2Descriptor<18, Grib2AggregationDescriptor>>;
 
 GRIB2_PRODUCT_TEMPLATE(Grib2ProductEnsMemAgg)
+
+}
+
 #endif

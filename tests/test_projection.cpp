@@ -2,10 +2,12 @@
 #include <iostream>
 #include <vector>
 
-#include <grib2_grid_templates.cpp>
+#include <grib2_grid_templates.h>
 
 #include <proj/crs.hpp>
 #include <proj/util.hpp>
+
+using namespace zaphod;
 
 template <typename T>
 std::ostream& operator<<(std::ostream& stream, std::vector<T> vec) {

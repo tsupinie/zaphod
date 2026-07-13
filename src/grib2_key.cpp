@@ -1,12 +1,14 @@
 
 #include "grib2_key.h"
 
-std::ostream& operator<<(std::ostream& stream, const Grib2KeyIgnore& key) {
+using namespace zaphod;
+
+std::ostream& zaphod::operator<<(std::ostream& stream, const Grib2KeyIgnore& key) {
     stream << "<ignore>";
     return stream;
 }
 
-std::ostream& operator<<(std::ostream& stream, const Grib2KeyNotPresent& key) {
+std::ostream& zaphod::operator<<(std::ostream& stream, const Grib2KeyNotPresent& key) {
     stream << "<not present>";
     return stream;
 }
@@ -25,7 +27,7 @@ bool Grib2Key::operator==(const Grib2Key& other) const {
         surface_1_matches && level_1_matches && surface_2_matches && level_2_matches;
 }
 
-std::ostream& operator<<(std::ostream& stream, const Grib2Key& key) {
+std::ostream& zaphod::operator<<(std::ostream& stream, const Grib2Key& key) {
     stream << "Grib2Key { discipline=" << key.discipline << ", " <<
                             "pdt_num=" << key.pdt_number << ", " <<
                           "param_cat=" << key.param_category << ", " <<

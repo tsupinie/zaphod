@@ -1,11 +1,13 @@
-#ifndef __GRIB2_TABLE__
-#define __GRIB2_TABLE__
+#ifndef __ZAPHOD_GRIB2_TABLE__
+#define __ZAPHOD_GRIB2_TABLE__
 
 #include <string>
 #include <utility>
 #include <vector>
 #include <map>
 #include <iostream>
+
+namespace zaphod {
 
 enum struct OperationalStatus {OPERATIONAL, DEPRECATED, EXPERIMENTAL};
 enum struct TableType {CODE, FLAG};
@@ -44,5 +46,7 @@ struct Grib2TableManager {
     private:
     std::map<std::string, Grib2Table> tables;
 };
+
+}
 
 #endif

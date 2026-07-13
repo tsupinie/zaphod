@@ -5,6 +5,8 @@
 
 #include "grib2_grid_templates.h"
 
+using namespace zaphod;
+
 
 NS_PROJ::crs::CRSNNPtr make_proj_crs(
     const NS_PROJ::datum::EllipsoidNNPtr& ellipsoid, 
@@ -29,13 +31,13 @@ NS_PROJ::crs::CRSNNPtr make_proj_crs(
     return NS_PROJ::crs::ProjectedCRS::create(props, base_crs, conversion, proj_cs);
 }
 
-NS_PROJ::operation::CoordinateTransformerNNPtr make_transformer(NS_PROJ::crs::CRSNNPtr crs_from, NS_PROJ::crs::CRSNNPtr crs_to, PJ_CONTEXT* ctx) {
+NS_PROJ::operation::CoordinateTransformerNNPtr zaphod::make_transformer(NS_PROJ::crs::CRSNNPtr crs_from, NS_PROJ::crs::CRSNNPtr crs_to, PJ_CONTEXT* ctx) {
     auto factory = NS_PROJ::operation::CoordinateOperationFactory::create();
     auto op = factory->createOperation(crs_from, crs_to);
     return op->coordinateTransformer(ctx);
 }
 
-std::tuple<float, float> transform_point(float x_in, float y_in, const NS_PROJ::operation::CoordinateTransformerNNPtr& trans) {
+std::tuple<float, float> zaphod::transform_point(float x_in, float y_in, const NS_PROJ::operation::CoordinateTransformerNNPtr& trans) {
     PJ_COORD coord = {{x_in, y_in, 0, HUGE_VAL}};
     PJ_COORD coord_trans = trans->transform(coord);
 
@@ -171,7 +173,7 @@ NS_PROJ::operation::CoordinateTransformerNNPtr Grib2GridDef::get_inv_transform(P
     case name::template_number: \
         return std::make_shared<name>(name::from_buffer(template_buf));
 
-std::shared_ptr<Grib2GridDef> select_grid_def_template(g2int template_num, g2int* template_buf) {
+std::shared_ptr<Grib2GridDef> zaphod::select_grid_def_template(g2int template_num, g2int* template_buf) {
     switch (template_num) {
         GRIB2_GRID_DEFINITION_CASE(Grib2GridDefLatLon)
         GRIB2_GRID_DEFINITION_CASE(Grib2GridDefLambert)

@@ -1,5 +1,5 @@
-#ifndef __SPCPOST_GRIB2_GRID_TEMPLATES__
-#define __SPCPOST_GRIB2_GRID_TEMPLATES__
+#ifndef __ZAPHOD_GRIB2_GRID_TEMPLATES__
+#define __ZAPHOD_GRIB2_GRID_TEMPLATES__
 
 extern "C" {
     #include <grib2.h>
@@ -18,6 +18,8 @@ extern "C" {
 #include <vector>
 
 #include "grib2_templates.h"
+
+namespace zaphod {
 
 struct Grib2EarthShapeDescriptor {
     Grib2EarthShapeDescriptor() = delete;
@@ -123,5 +125,7 @@ GRIB2_GRID_TEMPLATE(Grib2GridDefLambert, "lcc")
 
 std::tuple<float, float> transform_point(float x_in, float y_in, const NS_PROJ::operation::CoordinateTransformerNNPtr& trans);
 NS_PROJ::operation::CoordinateTransformerNNPtr make_transformer(NS_PROJ::crs::CRSNNPtr crs_from, NS_PROJ::crs::CRSNNPtr crs_to, PJ_CONTEXT* ctx);
+
+}
 
 #endif

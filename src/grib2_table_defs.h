@@ -1,7 +1,9 @@
-#ifndef __GRIB2_TABLE_DEFS__
-#define __GRIB2_TABLE_DEFS__
+#ifndef __ZAPHOD_GRIB2_TABLE_DEFS__
+#define __ZAPHOD_GRIB2_TABLE_DEFS__
 
 #include "grib2_table.h"
+
+namespace zaphod {
 
 const Grib2TableManager g2_tables({
     {"0.0", Grib2Table({
@@ -3088,4 +3090,6 @@ const Grib2TableManager g2_tables({
         {255,  "A bit map does not apply to this product", "", OperationalStatus::OPERATIONAL},
     }, "Bit map indicator", TableType::CODE)},
 });
+}
+
 #endif

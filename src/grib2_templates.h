@@ -1,5 +1,5 @@
-#ifndef __GRIB2SPC_GRIB2_TEMPLATES__
-#define __GRIB2SPC_GRIB2_TEMPLATES__
+#ifndef __ZAPHOD_GRIB2_TEMPLATES__
+#define __ZAPHOD_GRIB2_TEMPLATES__
 
 extern "C" {
     #include <grib2.h>
@@ -12,6 +12,8 @@ extern "C" {
 #include <iostream>
 
 #include "grib2_key.h"
+
+namespace zaphod {
 
 template <typename T, typename... Tuple>
 struct tuple_has_type;
@@ -108,5 +110,7 @@ using Grib2TemplateVal = std::variant<Grib2TemplateNotPresent, T>;
     if (const ValueType_##param_name *maybe_##param_name = std::get_if<ValueType_##param_name>(&templ_##param_name)) { \
         param_name = *maybe_##param_name; \
     }\
+
+}
 
 #endif

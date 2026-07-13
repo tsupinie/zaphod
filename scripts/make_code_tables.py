@@ -18,8 +18,8 @@ def main():
     with open(flags_fname) as fcsv:
         with open(output_fname, 'w') as fout:
             reader = csv.DictReader(fcsv)
-            fout.write('#ifndef __GRIB2_TABLE_DEFS__\n#define __GRIB2_TABLE_DEFS__\n\n')
-            fout.write('#include "grib2_table.h"\n\nconst Grib2TableManager g2_tables({\n')
+            fout.write('#ifndef __ZAPHOD_GRIB2_TABLE_DEFS__\n#define __ZAPHOD_GRIB2_TABLE_DEFS__\n\n')
+            fout.write('#include "grib2_table.h"\n\nnamespace zaphod {\n\nconst Grib2TableManager g2_tables({\n')
 
 
             current_table_id = None
@@ -81,7 +81,7 @@ def main():
                 fout.write(f'        {{{row_out["codes"]},  "{row_out["description"]}", "{row_out["units"]}", OperationalStatus::{row_out["status"].upper()}}},\n')
 
             fout.write(f'    }}, "{current_table_name}", TableType::{current_table_type.upper()})}},\n}});\n')
-            fout.write('#endif\n')
+            fout.write('}\n\n#endif\n')
 
 
     

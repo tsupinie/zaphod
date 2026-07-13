@@ -4,6 +4,8 @@
 #include "grib2_product_templates.h"
 #include "grib2_table_defs.h"
 
+using namespace zaphod;
+
 Grib2ParameterDescriptor Grib2ParameterDescriptor::from_buffer(const g2int* buf) {
     return {buf[0], buf[1], buf[2]};
 }
@@ -92,7 +94,7 @@ Grib2AggregationDescriptor Grib2AggregationDescriptor::from_buffer(const g2int* 
     case name::template_number: \
         return std::make_shared<name>(name::from_buffer(template_buf));
 
-std::shared_ptr<Grib2ProductDef> select_product_def_template(g2int template_num, g2int* template_buf) {
+std::shared_ptr<Grib2ProductDef> zaphod::select_product_def_template(g2int template_num, g2int* template_buf) {
     switch (template_num) {
         GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductAnaFcst)
         GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductEnsMem)

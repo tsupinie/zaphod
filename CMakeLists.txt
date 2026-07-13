@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15...3.27)
-project(grib2spc)
+project(zaphod)
 
 if (CMAKE_VERSION VERSION_LESS 3.18)
   set(DEV_MODULE Development)
@@ -34,29 +34,29 @@ file(
     "src/*.cpp"
 )
 
-add_library(grib2spc ${SOURCES})
+add_library(zaphod ${SOURCES})
 
-target_compile_options(grib2spc PRIVATE -std=c++17 -O3)
-target_link_libraries(grib2spc PRIVATE g2c::g2c PROJ::proj) # stdc++fs
+target_compile_options(zaphod PRIVATE -std=c++17 -O3)
+target_link_libraries(zaphod PRIVATE g2c::g2c PROJ::proj) # stdc++fs
 
-install(TARGETS grib2spc DESTINATION lib)
+install(TARGETS zaphod DESTINATION lib)
 
 include(CTest)
 
 add_executable(test_projection tests/test_projection.cpp)
 target_compile_options(test_projection PRIVATE -std=c++17 -O3)
 target_include_directories(test_projection PRIVATE src)
-target_link_libraries(test_projection PRIVATE grib2spc)
+target_link_libraries(test_projection PRIVATE zaphod)
 add_test(NAME test_projection COMMAND test_projection)
 
 add_executable(test_templates tests/test_templates.cpp)
 target_compile_options(test_templates PRIVATE -std=c++17)
 target_include_directories(test_templates PRIVATE src)
-target_link_libraries(test_templates PRIVATE grib2spc)
+target_link_libraries(test_templates PRIVATE zaphod)
 add_test(NAME test_templates COMMAND test_templates)
 
 add_executable(test_grib_reader tests/test_grib_reader.cpp)
 target_compile_options(test_grib_reader PRIVATE -std=c++17)
 target_include_directories(test_grib_reader PRIVATE src)
-target_link_libraries(test_grib_reader PRIVATE grib2spc)
+target_link_libraries(test_grib_reader PRIVATE zaphod)
 add_test(NAME test_grib_reader COMMAND test_grib_reader)

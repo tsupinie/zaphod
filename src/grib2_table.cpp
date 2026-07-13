@@ -5,7 +5,9 @@
 
 #include "grib2_table.h"
 
-std::ostream& operator<<(std::ostream& stream, const Grib2TableEntry& entry) {
+using namespace zaphod;
+
+std::ostream& zaphod::operator<<(std::ostream& stream, const Grib2TableEntry& entry) {
     stream << "{" << entry.number << ", " << entry.meaning << ", " << entry.units << ", " << (entry.status == OperationalStatus::OPERATIONAL ? "Operational" : "Deprecated") << "}";
     return stream;
 }
@@ -18,7 +20,7 @@ Grib2TableEntry Grib2Table::get_entry(unsigned int number) const {
     throw std::string("Table \"") + this->name + std::string("\" has no entry ") + std::to_string(number);
 }
 
-std::ostream& operator<<(std::ostream& stream, const Grib2Table& table) {
+std::ostream& zaphod::operator<<(std::ostream& stream, const Grib2Table& table) {
     stream << "{" << std::endl << "  " << table.name << " (" << (table.type == TableType::CODE ? "Code" : "Flags") << ")" << std::endl;
     for (auto it = table.entries.begin() ; it != table.entries.end(); it++) {
         stream << "  " << *it << std::endl;

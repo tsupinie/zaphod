@@ -3,11 +3,11 @@
 
 using namespace std::chrono_literals;
 
-float value_from_buffer(const g2int* buf) {
+float zaphod::value_from_buffer(const g2int* buf) {
     return pow(10, -buf[0]) * buf[1];
 }
 
-std::chrono::system_clock::time_point time_point_from_buffer(const g2int* buf) {
+std::chrono::system_clock::time_point zaphod::time_point_from_buffer(const g2int* buf) {
     std::tm t{};
 
     t.tm_year = buf[0] - 1900;
@@ -21,7 +21,7 @@ std::chrono::system_clock::time_point time_point_from_buffer(const g2int* buf) {
     return std::chrono::system_clock::from_time_t(std::mktime(&t));
 }
 
-std::chrono::duration<unsigned int> duration_from_buffer(const g2int* buf) {
+std::chrono::duration<unsigned int> zaphod::duration_from_buffer(const g2int* buf) {
     unsigned int units = buf[0];
     int fcst_time_raw = buf[1];
     

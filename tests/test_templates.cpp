@@ -3,6 +3,8 @@
 
 #include <grib2_product_templates.h>
 
+using namespace zaphod;
+
 int main() {
     g2int buf[15] = {3, 5, 0,  0, 0,  0, 0, 1, 24,  100, 0, 50000, 255, 0, 0};
 

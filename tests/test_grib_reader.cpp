@@ -3,6 +3,8 @@
 
 #include <grib2_reader.h>
 
+using namespace zaphod;
+
 int main() {
     const std::string fname = "data/24042802.rap.t02z.awp130bgrbf00.grib2";
 

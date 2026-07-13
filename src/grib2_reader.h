@@ -1,5 +1,5 @@
-#ifndef __SPCPOST_GRIB2__
-#define __SPCPOST_GRIB2__
+#ifndef __ZAPHOD_GRIB2_READER__
+#define __ZAPHOD_GRIB2_READER__
 
 extern "C" {
     #include <grib2.h>
@@ -19,7 +19,7 @@ extern "C" {
 #include "grib2_key.h"
 #include "grib2_product_templates.h"
 
-namespace fs = std::filesystem;
+namespace zaphod {
 
 class Grib2Field {
     public:
@@ -71,5 +71,7 @@ class Grib2File {
 };
 
 std::ostream& operator<<(std::ostream& stream, const Grib2File& g2f);
+
+};
 
 #endif

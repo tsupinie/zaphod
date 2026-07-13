@@ -1,5 +1,5 @@
-#ifndef __GRIB2SPC_GRIB2KEY__
-#define __GRIB2SPC_GRIB2KEY__
+#ifndef __ZAPHOD_GRIB2_KEY__
+#define __ZAPHOD_GRIB2_KEY__
 
 #include <variant>
 #include <iostream>
@@ -7,6 +7,8 @@
 #include <cmath>
 
 #include "grib2_grid_templates.h"
+
+namespace zaphod {
 
 template <class T, class... Types>
 std::ostream& operator<<(std::ostream& stream, const std::variant<T, Types...>& var) {
@@ -69,5 +71,7 @@ struct Grib2Key {
 };
 
 std::ostream& operator<<(std::ostream& stream, const Grib2Key& key);
+
+}
 
 #endif
