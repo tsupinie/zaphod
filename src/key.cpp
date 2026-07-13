@@ -1,5 +1,5 @@
 
-#include "grib2_key.h"
+#include <zaphod/key.h>
 
 using namespace zaphod;
 

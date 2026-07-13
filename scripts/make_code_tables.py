@@ -8,7 +8,7 @@ import re
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--flags-fname', type=Path, default=Path('./CodeFlag.txt'))
-    ap.add_argument('--output-fname', type=Path, default=Path('./src/grib2_table_defs.h'))
+    ap.add_argument('--output-fname', type=Path, default=Path('./include/zaphod/table_defs.h'))
 
     args = ap.parse_args()
 
@@ -19,7 +19,7 @@ def main():
         with open(output_fname, 'w') as fout:
             reader = csv.DictReader(fcsv)
             fout.write('#ifndef __ZAPHOD_GRIB2_TABLE_DEFS__\n#define __ZAPHOD_GRIB2_TABLE_DEFS__\n\n')
-            fout.write('#include "grib2_table.h"\n\nnamespace zaphod {\n\nconst Grib2TableManager g2_tables({\n')
+            fout.write('#include "table.h"\n\nnamespace zaphod {\n\nconst Grib2TableManager g2_tables({\n')
 
 
             current_table_id = None

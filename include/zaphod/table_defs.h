@@ -1,7 +1,7 @@
 #ifndef __ZAPHOD_GRIB2_TABLE_DEFS__
 #define __ZAPHOD_GRIB2_TABLE_DEFS__
 
-#include "grib2_table.h"
+#include "table.h"
 
 namespace zaphod {
 

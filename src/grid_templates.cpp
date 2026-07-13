@@ -3,7 +3,7 @@
 #include <iostream>
 #include <chrono>
 
-#include "grib2_grid_templates.h"
+#include <zaphod/grid_templates.h>
 
 using namespace zaphod;
 

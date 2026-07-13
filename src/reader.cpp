@@ -14,8 +14,8 @@ extern "C" {
 #define WORD 32 /**< Number of bits in four bytes. */
 #include <arpa/inet.h> /* ntohl() function for Unix/Mac. */
 
-#include "grib2_reader.h"
-#include "grib2_utils.h"
+#include <zaphod/reader.h>
+#include <zaphod/utils.h>
 
 /** Byte swap 64-bit ints. This converts native-endian 8-byte ints into
  * big-endian 8-byte ints. */

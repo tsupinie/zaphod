@@ -2,7 +2,7 @@
 #include <iostream>
 #include <vector>
 
-#include <grib2_grid_templates.h>
+#include <zaphod.h>
 
 #include <proj/crs.hpp>
 #include <proj/util.hpp>

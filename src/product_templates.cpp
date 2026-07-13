@@ -1,8 +1,8 @@
 
 #include <sstream>
 
-#include "grib2_product_templates.h"
-#include "grib2_table_defs.h"
+#include <zaphod/product_templates.h>
+#include <zaphod/table_defs.h>
 
 using namespace zaphod;
 

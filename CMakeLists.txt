@@ -34,6 +34,8 @@ file(
     "src/*.cpp"
 )
 
+include_directories(include)
+
 add_library(zaphod ${SOURCES})
 
 target_compile_options(zaphod PRIVATE -std=c++17 -O3)

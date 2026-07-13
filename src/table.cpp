@@ -3,7 +3,7 @@
 #include <iostream>
 #include <memory>
 
-#include "grib2_table.h"
+#include <zaphod/table.h>
 
 using namespace zaphod;
 

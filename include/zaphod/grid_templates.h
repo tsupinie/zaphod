@@ -17,7 +17,7 @@ extern "C" {
 #include <memory>
 #include <vector>
 
-#include "grib2_templates.h"
+#include "templates.h"
 
 namespace zaphod {
 

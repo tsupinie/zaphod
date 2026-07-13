@@ -1,7 +1,7 @@
 
 #include <iostream>
 
-#include <grib2_reader.h>
+#include <zaphod.h>
 
 using namespace zaphod;
 

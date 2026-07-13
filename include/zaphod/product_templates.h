@@ -7,9 +7,9 @@ extern "C" {
 
 #include <chrono>
 
-#include "grib2_key.h"
-#include "grib2_templates.h"
-#include "grib2_utils.h"
+#include "key.h"
+#include "templates.h"
+#include "utils.h"
 
 namespace zaphod {
 

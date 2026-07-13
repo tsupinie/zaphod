@@ -11,7 +11,7 @@ extern "C" {
 #include <functional>
 #include <iostream>
 
-#include "grib2_key.h"
+#include "key.h"
 
 namespace zaphod {
 

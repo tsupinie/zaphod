@@ -6,7 +6,7 @@
 
 #include <cmath>
 
-#include "grib2_grid_templates.h"
+#include "grid_templates.h"
 
 namespace zaphod {
 

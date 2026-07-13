@@ -15,9 +15,9 @@ extern "C" {
 
 #include <cmath>
 
-#include "grib2_grid_templates.h"
-#include "grib2_key.h"
-#include "grib2_product_templates.h"
+#include "grid_templates.h"
+#include "key.h"
+#include "product_templates.h"
 
 namespace zaphod {
 
