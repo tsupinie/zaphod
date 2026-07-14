@@ -40,7 +40,7 @@ class PyGrib2Field : public zaphod::Grib2Field {
         std::vector<float> data = zaphod::Grib2Field::get_data();
 
         for (size_t i = 0; i < ni; i++) {
-            for (size_t j = 0; j < nj; nj++) {
+            for (size_t j = 0; j < nj; j++) {
                 data_ary(j, i) = data[i + ni * j];
             }
         }
