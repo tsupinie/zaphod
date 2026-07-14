@@ -25,6 +25,7 @@ struct Grib2Table {
     Grib2Table(std::vector<Grib2TableEntry> entries, std::string name, TableType type) : entries(entries), name(name), type(type) {}
 
     Grib2TableEntry get_entry(unsigned int number) const;
+    Grib2TableEntry get_entry(const std::string& meaning) const;
 
     friend std::ostream& operator<<(std::ostream&, const Grib2Table&);
 

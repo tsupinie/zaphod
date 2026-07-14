@@ -20,6 +20,14 @@ Grib2TableEntry Grib2Table::get_entry(unsigned int number) const {
     throw std::runtime_error("Table \"" + this->name + "\" has no entry " + std::to_string(number));
 }
 
+Grib2TableEntry Grib2Table::get_entry(const std::string& meaning) const {
+    for (auto it = this->entries.begin() ; it != this->entries.end() ; it++) {
+        if (it->meaning == meaning) return *it;
+    }
+
+    throw std::runtime_error("Table \"" + this->name + "\" has no entry with meaning \"" + meaning + "\"");
+}
+
 std::ostream& zaphod::operator<<(std::ostream& stream, const Grib2Table& table) {
     stream << "{" << std::endl << "  " << table.name << " (" << (table.type == TableType::CODE ? "Code" : "Flags") << ")" << std::endl;
     for (auto it = table.entries.begin() ; it != table.entries.end(); it++) {
