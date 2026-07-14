@@ -7,39 +7,9 @@
 #include <proj/crs.hpp>
 #include <proj/util.hpp>
 
+#include "utils.h"
+
 using namespace zaphod;
-
-template <typename T>
-std::ostream& operator<<(std::ostream& stream, std::vector<T> vec) {
-    if (vec.size() > 10) {
-        for (size_t i = 0; i < 5; i++) {
-            stream << vec[i] << ", ";
-        }
-
-        stream << "..., ";
-
-        for (size_t i = vec.size() - 5; i < vec.size(); i++) {
-            stream << vec[i];
-
-            if (i < vec.size() - 1)
-                stream << ", ";
-        }
-
-        stream << std::endl;
-    }
-    else {
-        for (size_t i = 0; i < vec.size(); i++) {
-            stream << vec[i];
-
-            if (i < vec.size() - 1)
-                stream << ", ";
-        }
-
-        stream << std::endl;
-    }
-
-    return stream;
-}
 
 int main() {
     Grib2EarthShapeDescriptor earth_shape(6371229., 6371229., true);
@@ -62,14 +32,14 @@ int main() {
     std::vector<float> xs = lcc.get_xs();
     std::vector<float> ys = lcc.get_ys();
 
-    std::cout << xs;
-    std::cout << ys;
+    std::cout << xs << std::endl;
+    std::cout << ys << std::endl;
 
     std::vector<float> lats, lons;
     std::tie(lons, lats) = lcc.get_lonlats();
 
-    std::cout << lons;
-    std::cout << lats;
+    std::cout << lons << std::endl;
+    std::cout << lats << std::endl;
 
     grid = {121, 81};
     Grib2LatLonProjectionDescriptor latlon_projection = {20., -125., 60., -65., 0.5, 0.5};
@@ -77,8 +47,8 @@ int main() {
     xs = latlon.get_xs();
     ys = latlon.get_ys();
 
-    std::cout << xs;
-    std::cout << ys;
+    std::cout << xs << std::endl;
+    std::cout << ys << std::endl;
 
     return 0;
 }
