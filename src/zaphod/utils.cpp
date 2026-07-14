@@ -32,7 +32,7 @@ std::chrono::duration<unsigned int> zaphod::duration_from_buffer(const g2int* bu
         case 1: dur = fcst_time_raw * 1h; break;
         case 2: dur = fcst_time_raw * 24h; break;
         case 13: dur = fcst_time_raw * 1s; break;
-        default: throw "Unhandled time units";
+        default: throw std::runtime_error("Unhandled time units");
     }
 
     return dur;

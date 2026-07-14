@@ -89,7 +89,7 @@ Grib2EarthShapeDescriptor Grib2EarthShapeDescriptor::from_buffer(const g2int* bu
             earth_is_sphere = false;
             break;
         default:
-            throw "Unknown earth shape";
+            throw std::runtime_error("Unknown earth shape");
     }
 
     return Grib2EarthShapeDescriptor(earth_semimajor, earth_semiminor, earth_is_sphere);
@@ -178,7 +178,7 @@ std::shared_ptr<Grib2GridDef> zaphod::select_grid_def_template(g2int template_nu
         GRIB2_GRID_DEFINITION_CASE(Grib2GridDefLatLon)
         GRIB2_GRID_DEFINITION_CASE(Grib2GridDefLambert)
         default:
-            throw "Unknown grid template number";
+            throw std::runtime_error("Unknown grid template number: " + std::to_string(template_num));
     }
 }
 

@@ -103,6 +103,6 @@ std::shared_ptr<Grib2ProductDef> zaphod::select_product_def_template(g2int templ
         GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductProbAgg)
         GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductEnsMemAgg)
         default:
-            throw "Unknown grid template number";
+            throw std::runtime_error("Unknown grid template number: " + std::to_string(template_num));
     }
 }

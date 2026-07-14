@@ -17,7 +17,7 @@ Grib2TableEntry Grib2Table::get_entry(unsigned int number) const {
         if (it->number == number) return *it;
     }
 
-    throw std::string("Table \"") + this->name + std::string("\" has no entry ") + std::to_string(number);
+    throw std::runtime_error("Table \"" + this->name + "\" has no entry " + std::to_string(number));
 }
 
 std::ostream& zaphod::operator<<(std::ostream& stream, const Grib2Table& table) {
@@ -32,11 +32,11 @@ std::ostream& zaphod::operator<<(std::ostream& stream, const Grib2Table& table) 
 
 Grib2Table Grib2TableManager::get_table(unsigned char section, unsigned short num) const {
     if (section == 4 && num == 1) {
-        throw std::string("Grib2TableManager::get_table() needs a discipline for table 4.1");
+        throw std::runtime_error("Grib2TableManager::get_table() needs a discipline for table 4.1");
     }
 
     if (section == 4 && num == 2) {
-        throw std::string("Grib2TableManager::get_table() needs a discipline and category for table 4.2");
+        throw std::runtime_error("Grib2TableManager::get_table() needs a discipline and category for table 4.2");
     }
 
     return this->get_table(section, num, 0, 0);
@@ -44,7 +44,7 @@ Grib2Table Grib2TableManager::get_table(unsigned char section, unsigned short nu
 
 Grib2Table Grib2TableManager::get_table(unsigned char section, unsigned short num, unsigned short discipline) const {
     if (section == 4 && num == 2) {
-        throw std::string("Grib2TableManager::get_table() needs a category for table 4.2");
+        throw std::runtime_error("Grib2TableManager::get_table() needs a category for table 4.2");
     }
 
     return this->get_table(section, num, discipline, 0);
