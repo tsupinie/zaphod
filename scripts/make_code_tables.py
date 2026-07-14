@@ -5,6 +5,32 @@ from pathlib import Path
 import argparse
 import re
 
+DESCRIPTION_TRANSLATIONS = {
+    '0.0': {
+        'Meteorological products': 'Meteorology',
+        'Hydrological products': 'Hydrology',
+        'Land surface products': 'Land surface',
+        'Satellite remote sensing products (formerly \\"Space products\\")': 'Satellite remote sensing',
+        'Space weather products': 'Space weather',
+        'Oceanographic products': 'Oceanography',
+    },
+    '4.5': {
+        'Ground or water surface' : 'Surface',
+        'Cloud base level': 'Cloud base',
+        'Level of cloud tops': 'Cloud top',
+        'Level of 0 °C isotherm': 'Freezing level',
+        'Level of adiabatic condensation lifted from the surface': 'Lifted condensation level',
+        'Level of free convection (LFC)': 'Level of free convection',
+        'Convective condensation level (CCL)' : 'Convective condensation level',
+        'Level of neutral buoyancy or equilibrium level (LNB)': 'Equilibrium level',
+        'Nominal top of the atmosphere': 'Top of atmosphere',
+        'Isobaric surface': 'Isobaric level',
+        'Specific altitude above mean sea level': 'Height above MSL',
+        'Specified height level above ground': 'Height AGL',
+        'Depth below land surface': 'Depth below ground',
+    }
+}
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--flags-fname', type=Path, default=Path('./CodeFlag.txt'))
@@ -30,7 +56,7 @@ def main():
                 if '-' in row['CodeFlag'] or row['CodeFlag'] == '':
                     continue
 
-                match = re.match('(Code|Flag) table ([\d]+\.[\d]+) - (.+)', row['Title_en'])
+                match = re.match(r'(Code|Flag) table ([\d]+\.[\d]+) - (.+)', row['Title_en'])
 
                 if match is None:
                     print(row['Title_en'])
@@ -39,7 +65,7 @@ def main():
                 code_or_flags, table_num, table_title = match.groups()
 
                 if row['SubTitle_en'] != "":
-                    match = re.match('Product discipline ([\d]+) - [^,]+(?:, parameter category ([\d]+): .+)?', row['SubTitle_en'])
+                    match = re.match(r'Product discipline ([\d]+) - [^,]+(?:, parameter category ([\d]+): .+)?', row['SubTitle_en'])
 
                     if match is None:
                         print(row['SubTitle_en'])
@@ -52,12 +78,17 @@ def main():
                     else:
                         table_num = f'{table_num}.{sub_discipline}.{sub_category}'
 
+                translations = DESCRIPTION_TRANSLATIONS.get(table_num, {})
+
+                description = row['MeaningParameterDescription_en'].replace('"', '\\"')
+                description = translations.get(description, description)
+
                 row_out = {
                     'number': table_num,
                     'type': code_or_flags,
                     'title': table_title,
                     'codes': row['CodeFlag'],
-                    'description': row['MeaningParameterDescription_en'].replace('"', '\\"'),
+                    'description': description,
                     'units': row['UnitComments_en'].replace('"', '\\"'),
                     'status': row['Status'].replace('Operationaal', 'Operational').replace('Opertional', 'Operational')
                 }
