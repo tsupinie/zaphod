@@ -115,9 +115,9 @@ class PyGrib2File : public zaphod::Grib2File {
     }
 };
 
-#define BIND_KEY_VARIABLE(name) \
-    .def_static("with_"#name, &zaphod::Grib2Key::with_##name, nb::arg(#name)) \
-    .def("and_"#name, &zaphod::Grib2Key::and_##name, nb::arg(#name))
+#define BIND_KEY_VARIABLE(name, type) \
+    .def_static("with_"#name, nb::overload_cast<type>(&zaphod::Grib2Key::with_##name), nb::arg(#name)) \
+    .def("and_"#name, nb::overload_cast<type>(&zaphod::Grib2Key::and_##name), nb::arg(#name))
 
 NB_MODULE(humma, m) {
     nb::class_<PyGrib2File>(m, "Grib2File")
@@ -138,14 +138,18 @@ NB_MODULE(humma, m) {
         .def("get_lonlats", &PyGrib2Field::get_lonlats);
 
     nb::class_<zaphod::Grib2Key>(m, "Grib2Key")
-        BIND_KEY_VARIABLE(discipline)
-        BIND_KEY_VARIABLE(pdt_number)
-        BIND_KEY_VARIABLE(param_category)
-        BIND_KEY_VARIABLE(param_number)
-        BIND_KEY_VARIABLE(fixed_surface_1)
-        BIND_KEY_VARIABLE(level_1)
-        BIND_KEY_VARIABLE(fixed_surface_2)
-        BIND_KEY_VARIABLE(level_2);
+        BIND_KEY_VARIABLE(discipline, g2int)
+        .def_static("with_disc_cat_param", &zaphod::Grib2Key::with_disc_cat_param, nb::arg("discipline"), nb::arg("category"), nb::arg("param"))
+        .def("and_disc_cat_param", &zaphod::Grib2Key::and_disc_cat_param, nb::arg("discipline"), nb::arg("category"), nb::arg("param"))
+        BIND_KEY_VARIABLE(pdt_number, g2int)
+        BIND_KEY_VARIABLE(param_category, g2int)
+        BIND_KEY_VARIABLE(param_number, g2int)
+        BIND_KEY_VARIABLE(level_1_type, g2int)
+        BIND_KEY_VARIABLE(level_1_type, const std::string&)
+        BIND_KEY_VARIABLE(level_1, float)
+        BIND_KEY_VARIABLE(level_2_type, g2int)
+        BIND_KEY_VARIABLE(level_2_type, const std::string&)
+        BIND_KEY_VARIABLE(level_2, float);
 
     m.attr("__version__") = "0.1.0";
     m.attr("__version_tuple__") = std::make_tuple(0, 1, 0);

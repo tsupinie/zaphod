@@ -3,6 +3,7 @@
 
 #include <variant>
 #include <iostream>
+#include <string>
 
 #include <cmath>
 
@@ -36,25 +37,37 @@ using Grib2KeyVal = std::variant<Grib2KeyIgnore, Grib2KeyNotPresent, T>;
     static Grib2Key with_##name(type name) { return Grib2Key().and_##name(name); } \
     Grib2Key and_##name(type name) { Grib2Key g2key(*this); g2key.name = name; return g2key; }
 
+#define KEY_VARIABLE_STRING(name) \
+    static Grib2Key with_##name(const std::string& name) { return Grib2Key().and_##name(name); } \
+    Grib2Key and_##name(const std::string& name);
+
 struct Grib2Key {
     Grib2Key() : discipline(Grib2KeyIgnore()), pdt_number(Grib2KeyIgnore()), param_category(Grib2KeyIgnore()), param_number(Grib2KeyIgnore()),
-                 fixed_surface_1(Grib2KeyIgnore()), level_1(Grib2KeyIgnore()), fixed_surface_2(Grib2KeyIgnore()), level_2(Grib2KeyIgnore()) {};
+                 level_1_type(Grib2KeyIgnore()), level_1(Grib2KeyIgnore()), level_2_type(Grib2KeyIgnore()), level_2(Grib2KeyIgnore()) {};
 
     Grib2Key(const Grib2KeyVal<g2int> discipline, const Grib2KeyVal<g2int> pdt_number, 
              const Grib2KeyVal<g2int> param_category, const Grib2KeyVal<g2int> param_number,
-             const Grib2KeyVal<g2int> fixed_surface_1, const Grib2KeyVal<float> level_1, 
-             const Grib2KeyVal<g2int> fixed_surface_2, const Grib2KeyVal<float> level_2) : 
+             const Grib2KeyVal<g2int> level_1_type, const Grib2KeyVal<float> level_1, 
+             const Grib2KeyVal<g2int> level_2_type, const Grib2KeyVal<float> level_2) : 
                  discipline(discipline), pdt_number(pdt_number), param_category(param_category), param_number(param_number),
-                 fixed_surface_1(fixed_surface_1), level_1(level_1), fixed_surface_2(fixed_surface_2), level_2(level_2) {}
+                 level_1_type(level_1_type), level_1(level_1), level_2_type(level_2_type), level_2(level_2) {}
 
     KEY_VARIABLE(g2int, discipline)
     KEY_VARIABLE(g2int, pdt_number)
     KEY_VARIABLE(g2int, param_category)
     KEY_VARIABLE(g2int, param_number)
-    KEY_VARIABLE(g2int, fixed_surface_1)
+    KEY_VARIABLE(g2int, level_1_type)
     KEY_VARIABLE(float, level_1)
-    KEY_VARIABLE(g2int, fixed_surface_2)
+    KEY_VARIABLE(g2int, level_2_type)
     KEY_VARIABLE(float, level_2)
+
+    static Grib2Key with_disc_cat_param(const std::string& discipline, const std::string& category, const std::string& param) { 
+        return Grib2Key().and_disc_cat_param(discipline, category, param); 
+    }
+    Grib2Key and_disc_cat_param(const std::string& discipline, const std::string& category, const std::string& param);
+
+    KEY_VARIABLE_STRING(level_1_type)
+    KEY_VARIABLE_STRING(level_2_type)
 
     bool operator==(const Grib2Key& other) const;
 
