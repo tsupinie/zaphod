@@ -15,7 +15,7 @@ int main() {
     Grib2EarthShapeDescriptor earth_shape(6371229., 6371229., true);
     Grib2SpatialGridDescriptor grid = {1799, 1099};
     Grib2ScanFlagsDescriptor scan_flags = {false, true, true, false};
-    Grib2LambertProjectionDescriptor lcc_projection = {38.5, -97.5, 38.5, 38.5, 21.138123, -122.719528, 3000., 3000.};
+    Grib2LambertProjectionDescriptor lcc_projection = {21.138123, -122.719528, 38.5, -97.5, 38.5, 38.5, 3000., 3000.};
 
     Grib2GridDefLambert lcc({earth_shape, grid, lcc_projection, scan_flags});
 

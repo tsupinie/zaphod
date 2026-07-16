@@ -62,12 +62,12 @@ struct Grib2LatLonProjectionDescriptor {
 };
 
 struct Grib2LambertProjectionDescriptor {
+    float latitude_first;
+    float longitude_first;
     float center_latitude;
     float standard_longitude;
     float standard_latitude_1;
     float standard_latitude_2;
-    float latitude_first;
-    float longitude_first;
     float di;
     float dj;
 
