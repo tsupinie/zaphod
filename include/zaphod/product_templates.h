@@ -107,6 +107,7 @@ Grib2Key Grib2ProductDef::get_key(const Grib2Template<N, Descrs...>& templ) cons
     Grib2KeyVal<float> surface_1_value;
     Grib2KeyVal<g2int> surface_2_type;
     Grib2KeyVal<float> surface_2_value;
+    Grib2KeyVal<std::chrono::system_clock::duration> agg_length = Grib2KeyNotPresent();
 
     GRIB2_TEMPLATE_GET_FROM_DESCRIPTOR_DEFAULT(Grib2ParameterDescriptor, parameter_category, Grib2KeyNotPresent())
     GRIB2_TEMPLATE_GET_FROM_DESCRIPTOR_DEFAULT(Grib2ParameterDescriptor, parameter_number, Grib2KeyNotPresent())
@@ -114,6 +115,13 @@ Grib2Key Grib2ProductDef::get_key(const Grib2Template<N, Descrs...>& templ) cons
     GRIB2_TEMPLATE_GET_FROM_DESCRIPTOR_DEFAULT(Grib2LayerDescriptor, surface_1_value, Grib2KeyNotPresent())
     GRIB2_TEMPLATE_GET_FROM_DESCRIPTOR_DEFAULT(Grib2LayerDescriptor, surface_2_type, Grib2KeyNotPresent())
     GRIB2_TEMPLATE_GET_FROM_DESCRIPTOR_DEFAULT(Grib2LayerDescriptor, surface_2_value, Grib2KeyNotPresent())
+
+    std::vector<Grib2AggregationDescriptor::Spec> specs;
+    GRIB2_TEMPLATE_GET_FROM_DESCRIPTOR(Grib2AggregationDescriptor, specs);
+
+    if (specs.size() > 0) {
+        agg_length = specs[0].length_of_time_range;
+    }
 
     return Grib2Key(
         Grib2KeyIgnore(),
@@ -123,7 +131,8 @@ Grib2Key Grib2ProductDef::get_key(const Grib2Template<N, Descrs...>& templ) cons
         surface_1_type,
         surface_1_value,
         surface_2_type,
-        surface_2_value
+        surface_2_value,
+        agg_length
     );
 }
 

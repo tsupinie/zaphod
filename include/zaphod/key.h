@@ -4,6 +4,7 @@
 #include <variant>
 #include <iostream>
 #include <string>
+#include <chrono>
 
 #include <cmath>
 
@@ -32,6 +33,19 @@ std::ostream& operator<<(std::ostream& stream, const Grib2KeyNotPresent& key);
 template <typename T>
 using Grib2KeyVal = std::variant<Grib2KeyIgnore, Grib2KeyNotPresent, T>;
 
+template <typename O, typename I, typename F>
+Grib2KeyVal<O> cast_key_val(Grib2KeyVal<I> input, F&& func) {
+    if (std::holds_alternative<Grib2KeyNotPresent>(input)) {
+        return Grib2KeyVal<O>(Grib2KeyNotPresent());
+    }
+    if (std::holds_alternative<Grib2KeyIgnore>(input)) {
+        return Grib2KeyVal<O>(Grib2KeyIgnore());
+    }
+
+    auto f = std::function(std::forward<F>(func));
+    return Grib2KeyVal<O>(f(std::get<I>(input)));
+}
+
 #define KEY_VARIABLE(type, name) \
     Grib2KeyVal<type> name; \
     static Grib2Key with_##name(type name) { return Grib2Key().and_##name(name); } \
@@ -48,9 +62,11 @@ struct Grib2Key {
     Grib2Key(const Grib2KeyVal<g2int> discipline, const Grib2KeyVal<g2int> pdt_number, 
              const Grib2KeyVal<g2int> param_category, const Grib2KeyVal<g2int> param_number,
              const Grib2KeyVal<g2int> level_1_type, const Grib2KeyVal<float> level_1, 
-             const Grib2KeyVal<g2int> level_2_type, const Grib2KeyVal<float> level_2) : 
+             const Grib2KeyVal<g2int> level_2_type, const Grib2KeyVal<float> level_2,
+             const Grib2KeyVal<std::chrono::system_clock::duration> agg_length) : 
                  discipline(discipline), pdt_number(pdt_number), param_category(param_category), param_number(param_number),
-                 level_1_type(level_1_type), level_1(level_1), level_2_type(level_2_type), level_2(level_2) {}
+                 level_1_type(level_1_type), level_1(level_1), level_2_type(level_2_type), level_2(level_2),
+                 agg_length(agg_length) {}
 
     KEY_VARIABLE(g2int, discipline)
     KEY_VARIABLE(g2int, pdt_number)
@@ -60,6 +76,7 @@ struct Grib2Key {
     KEY_VARIABLE(float, level_1)
     KEY_VARIABLE(g2int, level_2_type)
     KEY_VARIABLE(float, level_2)
+    KEY_VARIABLE(std::chrono::system_clock::duration, agg_length)
 
     static Grib2Key with_disc_cat_param(const std::string& discipline, const std::string& category, const std::string& param) { 
         return Grib2Key().and_disc_cat_param(discipline, category, param); 

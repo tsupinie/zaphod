@@ -58,12 +58,18 @@ bool Grib2Key::operator==(const Grib2Key& other) const {
     const bool level_1_matches = Grib2Key::param_equals(this->level_1, other.level_1);
     const bool surface_2_matches = Grib2Key::param_equals(this->level_2_type, other.level_2_type);
     const bool level_2_matches = Grib2Key::param_equals(this->level_2, other.level_2);
+    const bool agg_len_matches = Grib2Key::param_equals(this->agg_length, other.agg_length);
 
     return discipline_matches && pdt_number_matches && param_cat_matches && param_num_matches &&
-        surface_1_matches && level_1_matches && surface_2_matches && level_2_matches;
+        surface_1_matches && level_1_matches && surface_2_matches && level_2_matches && agg_len_matches;
 }
 
 std::ostream& zaphod::operator<<(std::ostream& stream, const Grib2Key& key) {
+    Grib2KeyVal<std::string> agg_len = 
+        cast_key_val<std::string>(key.agg_length, [](std::chrono::system_clock::duration dur) -> std::string { 
+            return std::to_string(std::chrono::duration_cast<std::chrono::seconds>(dur).count()) + "s"; 
+        });
+    
     stream << "Grib2Key { discipline=" << key.discipline << ", " <<
                             "pdt_num=" << key.pdt_number << ", " <<
                           "param_cat=" << key.param_category << ", " <<
@@ -71,6 +77,7 @@ std::ostream& zaphod::operator<<(std::ostream& stream, const Grib2Key& key) {
                          "level1type=" << key.level_1_type << ", " <<
                              "level1=" << key.level_1 << ", " <<
                          "level2type=" << key.level_2_type << ", " <<
-                             "level2=" << key.level_2 << " }";
+                             "level2=" << key.level_2 << ", " <<
+                         "agg_length=" << agg_len << " }";
     return stream;
 }
