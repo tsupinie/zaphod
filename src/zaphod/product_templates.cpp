@@ -65,6 +65,44 @@ std::string Grib2LayerDescriptor::get_summary_string() const {
     return ss.str();
 }
 
+bool Grib2LayerDescriptor::is_level() const {
+    return this->surface_2_type == 255 || this->surface_2_type == this->surface_1_type && this->surface_2_value == this->surface_1_value;
+}
+
+Level Grib2LayerDescriptor::get_level() const {
+    if (!this->is_level())
+        throw std::runtime_error("Product is not defined at particular level");
+
+    const auto level_table = g2_tables.get_table(4, 5);
+    const auto surface_1 = level_table.get_entry(this->surface_1_type);
+
+    return {surface_1.meaning, this->surface_1_value};
+}
+
+Layer Grib2LayerDescriptor::get_layer() const {
+    if (this->is_level())
+        throw std::runtime_error("Product is not defined over a layer");
+
+    const auto level_table = g2_tables.get_table(4, 5);
+    const auto surface_1 = level_table.get_entry(this->surface_1_type);
+    const auto surface_2 = level_table.get_entry(this->surface_2_type);
+
+    return {
+        {surface_1.meaning, this->surface_1_value},
+        {surface_2.meaning, this->surface_2_value}
+    };
+}
+
+std::ostream& zaphod::operator<<(std::ostream& stream, const Level& lev) {
+    stream << "Level {" << lev.coordinate << ", " << std::to_string(lev.level) << "}";
+    return stream;
+}
+
+std::ostream& zaphod::operator<<(std::ostream& stream, const Layer& lyr) {
+    stream << "Layer {" << lyr.bottom << ", " << lyr.top << "}";
+    return stream;
+}
+
 Grib2EnsembleMemberDescriptor Grib2EnsembleMemberDescriptor::from_buffer(const g2int* buf) {
     return {buf[0], buf[1], buf[2]};
 }

@@ -40,6 +40,8 @@ class Grib2Field {
     std::vector<float> get_xs() const { return this->grid_def->get_xs(); };
     std::vector<float> get_ys() const { return this->grid_def->get_ys(); };
     std::tuple<std::vector<float>, std::vector<float>> get_lonlats() const { return this->grid_def->get_lonlats(); };
+    Level get_level() const { return this->product_def->get_level(); };
+    Layer get_layer() const { return this->product_def->get_layer(); };
     std::string get_product_summary_string() const { return this->product_def->get_summary_string(this->field->discipline); };
     
     friend std::ostream& operator<<(std::ostream& stream, const Grib2Field& field);

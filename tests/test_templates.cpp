@@ -12,6 +12,20 @@ int main() {
 
     const auto templ = Grib2ProductAnaFcst::from_buffer(buf);
 
+    try {
+        std::cout << templ.get_level() << std::endl;
+    }
+    catch (std::runtime_error exc) {
+        std::cout << "No Level" << std::endl;
+    }
+
+    try {
+        std::cout << templ.get_layer() << std::endl;
+    }
+    catch (std::runtime_error exc) {
+        std::cout << "No Layer" << std::endl;
+    }
+
     const Grib2Key key = templ.get_key();
     const auto test_key = Grib2Key::with_param_category(3).and_agg_length(1h);
 

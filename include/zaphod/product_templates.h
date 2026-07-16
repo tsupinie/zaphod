@@ -46,6 +46,19 @@ struct Grib2ForecastTimeDescriptor {
     static Grib2ForecastTimeDescriptor from_buffer(const g2int* buf);
 };
 
+struct Level {
+    std::string coordinate;
+    float level;
+};
+
+struct Layer {
+    Level bottom;
+    Level top;
+};
+
+std::ostream& operator<<(std::ostream& stream, const Level& lev);
+std::ostream& operator<<(std::ostream& stream, const Layer& lyr);
+
 struct Grib2LayerDescriptor {
     g2int surface_1_type;
     float surface_1_value;
@@ -54,6 +67,11 @@ struct Grib2LayerDescriptor {
 
     static Grib2LayerDescriptor from_buffer(const g2int* buf);
     std::string get_summary_string() const;
+    Layer get_layer() const;
+    Level get_level() const;
+
+    private:
+    bool is_level() const;
 };
 
 struct Grib2EnsembleMemberDescriptor {
@@ -85,18 +103,26 @@ struct Grib2AggregationDescriptor {
 struct Grib2ProductDef {
     virtual Grib2Key get_key() const = 0;
 
+    virtual std::string get_summary_string(unsigned int discipline) const = 0;
+    virtual std::chrono::duration<unsigned int> get_forecast_time() const = 0;
+    virtual Level get_level() const = 0;
+    virtual Layer get_layer() const = 0;
+
+    protected:
     template <size_t N, typename... Descrs>
     Grib2Key get_key(const Grib2Template<N, Descrs...>& templ) const;
-
-    virtual std::string get_summary_string(unsigned int discipline) const = 0;
 
     template <size_t N, typename... Descrs>
     std::string get_summary_string(const Grib2Template<N, Descrs...>& templ) const;
 
-    virtual std::chrono::duration<unsigned int> get_forecast_time() const = 0;
-
     template <size_t N, typename... Descrs>
     std::chrono::duration<unsigned int> get_forecast_time(const Grib2Template<N, Descrs...>& templ) const;
+
+    template <size_t N, typename... Descrs>
+    Level get_level(const Grib2Template<N, Descrs...>& templ) const;
+
+    template <size_t N, typename... Descrs>
+    Layer get_layer(const Grib2Template<N, Descrs...>& templ) const;
 };
 
 template <size_t N, typename... Descrs>
@@ -163,6 +189,22 @@ std::string Grib2ProductDef::get_summary_string(const Grib2Template<N, Descrs...
     return parameter;
 }
 
+template <size_t N, typename... Descrs>
+Layer Grib2ProductDef::get_layer(const Grib2Template<N, Descrs...>& templ) const {
+    // As soon as I have a product definition template that doesn't have a Grib2LayerDescriptor in it this line will fail to compile.
+    const auto layer_descr = std::get<Grib2LayerDescriptor>(templ.descriptors);
+
+    return layer_descr.get_layer();
+}
+
+template <size_t N, typename... Descrs>
+Level Grib2ProductDef::get_level(const Grib2Template<N, Descrs...>& templ) const {
+    // As soon as I have a product definition template that doesn't have a Grib2LayerDescriptor in it this line will fail to compile.
+    const auto layer_descr = std::get<Grib2LayerDescriptor>(templ.descriptors);
+
+    return layer_descr.get_level();
+}
+
 std::shared_ptr<Grib2ProductDef> select_product_def_template(g2int template_num, g2int* template_buf);
 
 #define GRIB2_PRODUCT_TEMPLATE(name) \
@@ -171,6 +213,8 @@ std::shared_ptr<Grib2ProductDef> select_product_def_template(g2int template_num,
         Grib2Key get_key() const { return Grib2ProductDef::get_key(*this); }; \
         std::string get_summary_string(unsigned int discipline) const { return Grib2ProductDef::get_summary_string(*this); }; \
         std::chrono::duration<unsigned int> get_forecast_time() const { return Grib2ProductDef::get_forecast_time(*this); }; \
+        Level get_level() const { return Grib2ProductDef::get_level(*this); } \
+        Layer get_layer() const { return Grib2ProductDef::get_layer(*this); } \
         static name from_buffer(const g2int* buf) { return name##Base::from_buffer(buf); }; \
     };
 
