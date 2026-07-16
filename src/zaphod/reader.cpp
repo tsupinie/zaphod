@@ -53,8 +53,8 @@ bool Grib2Field::matches(const std::vector<Grib2Key>& keys) const {
 }
 
 std::vector<float> Grib2Field::get_data() {
-    size_t ni = this->field->igdtmpl[7];
-    size_t nj = this->field->igdtmpl[8];
+    size_t ni = this->get_ni();
+    size_t nj = this->get_nj();
 
     gribfield* fld;
 
