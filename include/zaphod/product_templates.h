@@ -164,7 +164,7 @@ Grib2Key Grib2ProductDef::get_key(const Grib2Template<N, Descrs...>& templ) cons
 
 template <size_t N, typename... Descrs>
 std::chrono::duration<unsigned int> Grib2ProductDef::get_forecast_time(const Grib2Template<N, Descrs...>& templ) const {
-    std::string err_msg = std::string("Forecast time not present in template ") + std::to_string(N);
+    ParameterNotInMessage err_msg("Forecast time not present in template " + std::to_string(N));
 
     std::chrono::duration<unsigned int> forecast_time;
     GRIB2_TEMPLATE_GET_FROM_DESCRIPTOR_REQUIRED(Grib2ForecastTimeDescriptor, forecast_time, err_msg);
