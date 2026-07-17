@@ -81,8 +81,11 @@ struct Grib2GridDef {
     virtual g2int get_ni() const = 0;
     virtual g2int get_nj() const = 0;
     virtual std::tuple<std::vector<float>, std::vector<float>> get_lonlats() const = 0;
+    virtual void get_lonlats(float* lons_buf, float* lats_buf) const = 0;
     virtual std::vector<float> get_xs() const = 0;
     virtual std::vector<float> get_ys() const = 0;
+    virtual void get_xs(float* buf) const = 0;
+    virtual void get_ys(float* buf) const = 0;
 
     NS_PROJ::operation::CoordinateTransformerNNPtr get_fwd_transform(PJ_CONTEXT* ctx) const;
     NS_PROJ::operation::CoordinateTransformerNNPtr get_inv_transform(PJ_CONTEXT* ctx) const;
@@ -103,10 +106,13 @@ std::shared_ptr<Grib2GridDef> select_grid_def_template(g2int template_num, g2int
         std::map<std::string, float> get_proj_parameters() const; \
         std::string get_proj_type() const { return type; }; \
         std::tuple<std::vector<float>, std::vector<float>> get_lonlats() const; \
+        void get_lonlats(float* lons_buf, float* lats_buf) const; \
         g2int get_ni() const; \
         g2int get_nj() const; \
         std::vector<float> get_xs() const; \
         std::vector<float> get_ys() const; \
+        void get_xs(float* buf) const; \
+        void get_ys(float* buf) const; \
         \
         protected: \
         NS_PROJ::crs::ProjectedCRSNNPtr get_crs() const; \

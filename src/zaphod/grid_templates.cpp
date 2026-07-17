@@ -220,41 +220,61 @@ g2int Grib2GridDefLatLon::get_nj() const {
 
 std::vector<float> Grib2GridDefLatLon::get_xs() const {
     const auto grid = std::get<Grib2SpatialGridDescriptor>(this->descriptors);
-    const auto scan_flags = std::get<Grib2ScanFlagsDescriptor>(this->descriptors);
-    const auto projection = std::get<Grib2LatLonProjectionDescriptor>(this->descriptors);
-    
     std::vector<float> xs(grid.ni);
-    const float inc_sign = scan_flags.first_col_is_west ? 1 : -1;
 
-    for (size_t i = 0; i < grid.ni; i++) {
-        xs[i] = projection.longitude_first + inc_sign * i * projection.di;
-    }
+    this->get_xs(xs.data());
 
     return xs;
 }
 
-std::vector<float> Grib2GridDefLatLon::get_ys() const {
+void Grib2GridDefLatLon::get_xs(float* buf) const {
     const auto grid = std::get<Grib2SpatialGridDescriptor>(this->descriptors);
     const auto scan_flags = std::get<Grib2ScanFlagsDescriptor>(this->descriptors);
     const auto projection = std::get<Grib2LatLonProjectionDescriptor>(this->descriptors);
+    
+    const float inc_sign = scan_flags.first_col_is_west ? 1 : -1;
 
-    std::vector<float> ys(grid.nj);
-    const float inc_sign = scan_flags.first_row_is_south ? 1 : -1;
-
-    for (size_t j = 0; j < grid.nj; j++) {
-        ys[j] = projection.latitude_first + inc_sign * j * projection.dj;
+    for (size_t i = 0; i < grid.ni; i++) {
+        buf[i] = projection.longitude_first + inc_sign * i * projection.di;
     }
+}
+
+std::vector<float> Grib2GridDefLatLon::get_ys() const {
+    const auto grid = std::get<Grib2SpatialGridDescriptor>(this->descriptors);
+    std::vector<float> ys(grid.nj);
+
+    this->get_ys(ys.data());
 
     return ys;
 }
 
-std::tuple<std::vector<float>, std::vector<float>> Grib2GridDefLatLon::get_lonlats() const {
+void Grib2GridDefLatLon::get_ys(float* buf) const {
     const auto grid = std::get<Grib2SpatialGridDescriptor>(this->descriptors);
     const auto scan_flags = std::get<Grib2ScanFlagsDescriptor>(this->descriptors);
     const auto projection = std::get<Grib2LatLonProjectionDescriptor>(this->descriptors);
+    
+    const float inc_sign = scan_flags.first_row_is_south ? 1 : -1;
+
+    for (size_t j = 0; j < grid.nj; j++) {
+        buf[j] = projection.latitude_first + inc_sign * j * projection.dj;
+    }
+}
+
+std::tuple<std::vector<float>, std::vector<float>> Grib2GridDefLatLon::get_lonlats() const {
+    const auto grid = std::get<Grib2SpatialGridDescriptor>(this->descriptors);
 
     std::vector<float> lons(grid.ni * grid.nj);
     std::vector<float> lats(grid.ni * grid.nj);
+
+    this->get_lonlats(lons.data(), lats.data());
+
+    return std::tuple<std::vector<float>, std::vector<float>>(lons, lats);
+}
+
+void Grib2GridDefLatLon::get_lonlats(float* buf_lons, float* buf_lats) const {
+    const auto grid = std::get<Grib2SpatialGridDescriptor>(this->descriptors);
+    const auto scan_flags = std::get<Grib2ScanFlagsDescriptor>(this->descriptors);
+    const auto projection = std::get<Grib2LatLonProjectionDescriptor>(this->descriptors);
 
     const float inc_sign_lon = scan_flags.first_col_is_west ? 1 : -1;
     const float inc_sign_lat = scan_flags.first_row_is_south ? 1 : -1;
@@ -266,12 +286,10 @@ std::tuple<std::vector<float>, std::vector<float>> Grib2GridDefLatLon::get_lonla
             float lon = projection.longitude_first + inc_sign_lon * i * projection.di;
 
             size_t idx = i + grid.ni * j;
-            lons[idx] = lon;
-            lats[idx] = lat;
+            buf_lons[idx] = lon;
+            buf_lats[idx] = lat;
         } 
     }
-
-    return std::tuple<std::vector<float>, std::vector<float>>(lons, lats);
 }
 
 
@@ -320,28 +338,14 @@ g2int Grib2GridDefLambert::get_nj() const {
 // Should get_xs() and get_ys() be (largely) implemented in the base class?
 std::vector<float> Grib2GridDefLambert::get_xs() const {
     const auto grid = std::get<Grib2SpatialGridDescriptor>(this->descriptors);
-    const auto scan_flags = std::get<Grib2ScanFlagsDescriptor>(this->descriptors);
-    const auto projection = std::get<Grib2LambertProjectionDescriptor>(this->descriptors);
-
-    PJ_CONTEXT *ctx = proj_context_create();
-    auto trans = this->get_fwd_transform(ctx);
-
-    float x_first, y_first;
-    std::tie(x_first, y_first) = transform_point(projection.longitude_first, projection.latitude_first, trans);
-
     std::vector<float> xs(grid.ni);
-    const float inc_sign = scan_flags.first_col_is_west ? 1 : -1;
 
-    for (size_t i = 0; i < grid.ni; i++) {
-        xs[i] = x_first + inc_sign * i * projection.di;
-    }
-
-    proj_context_destroy(ctx);
+    this->get_xs(xs.data());
 
     return xs;
 }
 
-std::vector<float> Grib2GridDefLambert::get_ys() const {
+void Grib2GridDefLambert::get_xs(float* buf) const {
     const auto grid = std::get<Grib2SpatialGridDescriptor>(this->descriptors);
     const auto scan_flags = std::get<Grib2ScanFlagsDescriptor>(this->descriptors);
     const auto projection = std::get<Grib2LambertProjectionDescriptor>(this->descriptors);
@@ -352,19 +356,55 @@ std::vector<float> Grib2GridDefLambert::get_ys() const {
     float x_first, y_first;
     std::tie(x_first, y_first) = transform_point(projection.longitude_first, projection.latitude_first, trans);
 
-    std::vector<float> ys(grid.nj);
-    const float inc_sign = scan_flags.first_row_is_south ? 1 : -1;
+    const float inc_sign = scan_flags.first_col_is_west ? 1 : -1;
 
-    for (size_t j = 0; j < grid.nj; j++) {
-        ys[j] = y_first + inc_sign * j * projection.dj;
+    for (size_t i = 0; i < grid.ni; i++) {
+        buf[i] = x_first + inc_sign * i * projection.di;
     }
 
     proj_context_destroy(ctx);
+}
+
+std::vector<float> Grib2GridDefLambert::get_ys() const {
+    const auto grid = std::get<Grib2SpatialGridDescriptor>(this->descriptors);
+    std::vector<float> ys(grid.nj);
+
+    this->get_ys(ys.data());
 
     return ys;
 }
 
+void Grib2GridDefLambert::get_ys(float* buf) const {
+    const auto grid = std::get<Grib2SpatialGridDescriptor>(this->descriptors);
+    const auto scan_flags = std::get<Grib2ScanFlagsDescriptor>(this->descriptors);
+    const auto projection = std::get<Grib2LambertProjectionDescriptor>(this->descriptors);
+
+    PJ_CONTEXT *ctx = proj_context_create();
+    auto trans = this->get_fwd_transform(ctx);
+
+    float x_first, y_first;
+    std::tie(x_first, y_first) = transform_point(projection.longitude_first, projection.latitude_first, trans);
+
+    const float inc_sign = scan_flags.first_row_is_south ? 1 : -1;
+
+    for (size_t j = 0; j < grid.nj; j++) {
+        buf[j] = y_first + inc_sign * j * projection.dj;
+    }
+
+    proj_context_destroy(ctx);
+}
+
 std::tuple<std::vector<float>, std::vector<float>> Grib2GridDefLambert::get_lonlats() const {
+    const auto grid = std::get<Grib2SpatialGridDescriptor>(this->descriptors);
+    std::vector<float> lons(grid.ni * grid.nj);
+    std::vector<float> lats(grid.ni * grid.nj);
+
+    this->get_lonlats(lons.data(), lats.data());
+
+    return std::tuple<std::vector<float>, std::vector<float>>(lons, lats);
+}
+
+void Grib2GridDefLambert::get_lonlats(float* lons_buf, float* lats_buf) const {
     const auto grid = std::get<Grib2SpatialGridDescriptor>(this->descriptors);
     const auto scan_flags = std::get<Grib2ScanFlagsDescriptor>(this->descriptors);
     const auto projection = std::get<Grib2LambertProjectionDescriptor>(this->descriptors);
@@ -372,9 +412,6 @@ std::tuple<std::vector<float>, std::vector<float>> Grib2GridDefLambert::get_lonl
     PJ_CONTEXT *ctx = proj_context_create();
     auto trans_fwd = this->get_fwd_transform(ctx);
     auto trans_inv = this->get_inv_transform(ctx);
-
-    std::vector<float> lons(grid.ni * grid.nj);
-    std::vector<float> lats(grid.ni * grid.nj);
 
     float x_first, y_first;
     std::tie(x_first, y_first) = transform_point(projection.longitude_first, projection.latitude_first, trans_fwd);
@@ -389,11 +426,9 @@ std::tuple<std::vector<float>, std::vector<float>> Grib2GridDefLambert::get_lonl
             float x = x_first + inc_sign_i * i * projection.di;
 
             size_t idx = i + grid.ni * j;
-            std::tie(lons[idx], lats[idx]) = transform_point(x, y, trans_inv);
+            std::tie(lons_buf[idx], lats_buf[idx]) = transform_point(x, y, trans_inv);
         } 
     }
 
     proj_context_destroy(ctx);
-
-    return std::tuple<std::vector<float>, std::vector<float>>(lons, lats);
 }

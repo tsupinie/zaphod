@@ -26,6 +26,7 @@ class Grib2Field {
     Grib2Field(std::vector<char> buffer, g2int ifld);
     Grib2Field(const Grib2Field& other) : field{other.field}, product_def(other.product_def), grid_def{other.grid_def}, buffer(other.buffer), i_field(other.i_field) {}
     std::vector<float> get_data();
+    void get_data(float* buf);
 
     bool matches(const std::vector<Grib2Key>& keys) const;
     std::string noaa_abbreviation() const;
@@ -39,7 +40,10 @@ class Grib2Field {
     g2int get_nj() const { return this->grid_def->get_nj(); };
     std::vector<float> get_xs() const { return this->grid_def->get_xs(); };
     std::vector<float> get_ys() const { return this->grid_def->get_ys(); };
+    void get_xs(float* buf) const { this->grid_def->get_xs(buf); };
+    void get_ys(float* buf) const { this->grid_def->get_ys(buf); };
     std::tuple<std::vector<float>, std::vector<float>> get_lonlats() const { return this->grid_def->get_lonlats(); };
+    void get_lonlats(float* lons_buf, float* lats_buf) const { this->grid_def->get_lonlats(lons_buf, lats_buf); };
     Level get_level() const { return this->product_def->get_level(); };
     Layer get_layer() const { return this->product_def->get_layer(); };
     std::string get_product_summary_string() const { return this->product_def->get_summary_string(this->field->discipline); };

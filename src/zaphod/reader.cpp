@@ -56,23 +56,29 @@ std::vector<float> Grib2Field::get_data() {
     size_t ni = this->get_ni();
     size_t nj = this->get_nj();
 
-    gribfield* fld;
+    std::vector<float> ary(nj * ni);
 
+    this->get_data(ary.data());
+
+    return ary;
+}
+
+void Grib2Field::get_data(float* buf) {
+    size_t ni = this->get_ni();
+    size_t nj = this->get_nj();
+
+    gribfield* fld;
     unsigned char *buffer_msg = reinterpret_cast<unsigned char*>(this->buffer.data());
     g2_getfld(buffer_msg, this->i_field + 1, 1, G2_EXPAND, &fld);
-
-    std::vector<float> ary(nj * ni);
 
     for (size_t j = 0; j < nj; j++) {
         for (size_t i = 0; i < ni; i++) {
             // TAS: need to account for the do_adjacent_rows_alternate flag here. Do the REFS members use that flag?
-            ary[i + ni * j] = fld->fld[i + ni * j];
+            buf[i + ni * j] = fld->fld[i + ni * j];
         }
     }
 
     g2_free(fld);
-
-    return ary;
 }
 
 std::string Grib2Field::noaa_abbreviation() const {
