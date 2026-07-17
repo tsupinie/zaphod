@@ -26,12 +26,8 @@ int main() {
         std::cout << data << std::endl;
 
     }
-    catch (std::string exc) {
-        std::cout << exc << std::endl;
-        return 1;
-    }
-    catch (const char* exc) {
-        std::cout << exc << std::endl;
+    catch (std::runtime_error exc) {
+        std::cout << exc.what() << std::endl;
         return 1;
     }
 
