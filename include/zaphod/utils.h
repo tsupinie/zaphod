@@ -6,6 +6,8 @@ extern "C" {
 }
 
 #include <chrono>
+#include <cmath>
+#include <stdexcept>
 
 namespace zaphod {
 
