@@ -15,14 +15,14 @@ int main() {
     try {
         std::cout << templ.get_level() << std::endl;
     }
-    catch (std::runtime_error exc) {
+    catch (ParameterNotInMessage exc) {
         std::cout << "No Level" << std::endl;
     }
 
     try {
         std::cout << templ.get_layer() << std::endl;
     }
-    catch (std::runtime_error exc) {
+    catch (ParameterNotInMessage exc) {
         std::cout << "No Layer" << std::endl;
     }
 

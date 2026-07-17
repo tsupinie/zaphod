@@ -71,7 +71,7 @@ bool Grib2LayerDescriptor::is_level() const {
 
 Level Grib2LayerDescriptor::get_level() const {
     if (!this->is_level())
-        throw std::runtime_error("Product is not defined at particular level");
+        throw ParameterNotInMessage("Product is not defined at particular level");
 
     const auto level_table = g2_tables.get_table(4, 5);
     const auto surface_1 = level_table.get_entry(this->surface_1_type);
@@ -81,7 +81,7 @@ Level Grib2LayerDescriptor::get_level() const {
 
 Layer Grib2LayerDescriptor::get_layer() const {
     if (this->is_level())
-        throw std::runtime_error("Product is not defined over a layer");
+        throw ParameterNotInMessage("Product is not defined over a layer");
 
     const auto level_table = g2_tables.get_table(4, 5);
     const auto surface_1 = level_table.get_entry(this->surface_1_type);
