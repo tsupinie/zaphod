@@ -8,11 +8,22 @@
 using namespace zaphod;
 
 std::ostream& zaphod::operator<<(std::ostream& stream, const Grib2TableEntry& entry) {
-    stream << "{" << entry.number << ", " << entry.meaning << ", " << entry.units << ", " << (entry.status == OperationalStatus::OPERATIONAL ? "Operational" : "Deprecated") << "}";
+    stream << "{" << entry.number << ", " << entry.meaning << "}";
     return stream;
 }
 
-Grib2TableEntry Grib2Table::get_entry(unsigned int number) const {
+std::ostream& zaphod::operator<<(std::ostream& stream, const Grib2TableEntryUnits& entry) {
+    stream << "{" << entry.number << ", " << entry.meaning << ", " << entry.units << "}";
+    return stream;
+}
+
+std::ostream& zaphod::operator<<(std::ostream& stream, const Grib2TableEntryUnitsAbbrev& entry) {
+    stream << "{" << entry.number << ", " << entry.meaning << ", " << entry.units << ", " << entry.abbrev << "}";
+    return stream;
+}
+
+template <typename E>
+E Grib2Table<E>::get_entry(unsigned int number) const {
     for (auto it = this->entries.begin() ; it != this->entries.end() ; it++) {
         if (it->number == number) return *it;
     }
@@ -20,7 +31,8 @@ Grib2TableEntry Grib2Table::get_entry(unsigned int number) const {
     throw std::runtime_error("Table \"" + this->name + "\" has no entry " + std::to_string(number));
 }
 
-Grib2TableEntry Grib2Table::get_entry(const std::string& meaning) const {
+template <typename E>
+E Grib2Table<E>::get_entry_by_meaning(const std::string& meaning) const {
     for (auto it = this->entries.begin() ; it != this->entries.end() ; it++) {
         if (it->meaning == meaning) return *it;
     }
@@ -28,8 +40,20 @@ Grib2TableEntry Grib2Table::get_entry(const std::string& meaning) const {
     throw std::runtime_error("Table \"" + this->name + "\" has no entry with meaning \"" + meaning + "\"");
 }
 
-std::ostream& zaphod::operator<<(std::ostream& stream, const Grib2Table& table) {
-    stream << "{" << std::endl << "  " << table.name << " (" << (table.type == TableType::CODE ? "Code" : "Flags") << ")" << std::endl;
+template <typename E>
+template <typename>
+E Grib2Table<E>::get_entry_by_abbrev(const std::string& abbrev) const {
+    for (auto it = this->entries.begin() ; it != this->entries.end() ; it++) {
+        if (it->abbrev == abbrev) return *it;
+    }
+
+    throw std::runtime_error("Table \"" + this->name + "\" has no entry with meaning \"" + abbrev + "\"");
+}
+
+
+template <typename E>
+std::ostream& zaphod::operator<<(std::ostream& stream, const Grib2Table<E>& table) {
+    stream << "{" << std::endl << "  " << table.name << std::endl;
     for (auto it = table.entries.begin() ; it != table.entries.end(); it++) {
         stream << "  " << *it << std::endl;
     }
@@ -38,36 +62,6 @@ std::ostream& zaphod::operator<<(std::ostream& stream, const Grib2Table& table) 
     return stream;
 }
 
-Grib2Table Grib2TableManager::get_table(unsigned char section, unsigned short num) const {
-    if (section == 4 && num == 1) {
-        throw std::runtime_error("Grib2TableManager::get_table() needs a discipline for table 4.1");
-    }
-
-    if (section == 4 && num == 2) {
-        throw std::runtime_error("Grib2TableManager::get_table() needs a discipline and category for table 4.2");
-    }
-
-    return this->get_table(section, num, 0, 0);
-}
-
-Grib2Table Grib2TableManager::get_table(unsigned char section, unsigned short num, unsigned short discipline) const {
-    if (section == 4 && num == 2) {
-        throw std::runtime_error("Grib2TableManager::get_table() needs a category for table 4.2");
-    }
-
-    return this->get_table(section, num, discipline, 0);
-}
-
-Grib2Table Grib2TableManager::get_table(unsigned char section, unsigned short num, unsigned short discipline, unsigned short category) const {
-    std::string key = std::to_string(section) + "." + std::to_string(num);
-
-    if (section == 4 && (num == 1 || num == 2)) {
-        key += "." + std::to_string(discipline);
-    }
-
-    if (section == 4 && num == 2) {
-        key += "." + std::to_string(category);
-    }
-
-    return this->tables.at(key);
-}
+template struct zaphod::Grib2Table<Grib2TableEntry>;
+template struct zaphod::Grib2Table<Grib2TableEntryUnits>;
+template struct zaphod::Grib2Table<Grib2TableEntryUnitsAbbrev>;
