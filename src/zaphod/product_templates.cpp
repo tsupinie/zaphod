@@ -10,6 +10,13 @@ Grib2ParameterDescriptor Grib2ParameterDescriptor::from_buffer(const g2int* buf)
     return {buf[0], buf[1], buf[2]};
 }
 
+std::string Grib2ParameterDescriptor::get_abbrev(unsigned short discipline) const {
+    const auto table = g2_tables.get_table_4_2(discipline, this->parameter_category);
+    const auto entry = table.get_entry(this->parameter_number);
+
+    return entry.abbrev;
+}
+
 Grib2ProbabilityDescriptor Grib2ProbabilityDescriptor::from_buffer(const g2int* buf) {
     return {
         buf[0],

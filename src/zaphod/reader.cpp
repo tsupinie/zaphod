@@ -82,9 +82,7 @@ void Grib2Field::get_data(float* buf) {
 }
 
 std::string Grib2Field::noaa_abbreviation() const {
-    char abbrev[G2C_MAX_NOAA_ABBREV_LEN] = {};
-    g2c_param_abbrev(this->field->discipline, this->field->ipdtmpl[0], this->field->ipdtmpl[1], abbrev);
-    return std::string(abbrev);
+    return this->product_def->get_abbrev(this->field->discipline);
 }
 
 std::chrono::system_clock::time_point Grib2Field::init_datetime() const {

@@ -19,6 +19,7 @@ struct Grib2ParameterDescriptor {
     g2int type_of_generating_process;
 
     static Grib2ParameterDescriptor from_buffer(const g2int* buf);
+    std::string get_abbrev(unsigned short discipline) const;
 };
 
 struct Grib2ProbabilityDescriptor {
@@ -103,6 +104,7 @@ struct Grib2AggregationDescriptor {
 struct Grib2ProductDef {
     virtual Grib2Key get_key() const = 0;
 
+    virtual std::string get_abbrev(unsigned short discipline) const = 0;
     virtual std::string get_summary_string(unsigned int discipline) const = 0;
     virtual std::chrono::duration<unsigned int> get_forecast_time() const = 0;
     virtual Level get_level() const = 0;
@@ -111,6 +113,9 @@ struct Grib2ProductDef {
     protected:
     template <size_t N, typename... Descrs>
     Grib2Key get_key(const Grib2Template<N, Descrs...>& templ) const;
+
+    template <size_t N, typename... Descrs>
+    std::string get_abbrev(const Grib2Template<N, Descrs...>& templ, unsigned short discipline) const;
 
     template <size_t N, typename... Descrs>
     std::string get_summary_string(const Grib2Template<N, Descrs...>& templ) const;
@@ -180,6 +185,16 @@ std::chrono::duration<unsigned int> Grib2ProductDef::get_forecast_time(const Gri
 }
 
 template <size_t N, typename... Descrs>
+std::string Grib2ProductDef::get_abbrev(const Grib2Template<N, Descrs...>& templ, unsigned short discipline) const {
+    // As soon as I have a product definition template that doesn't have a Grib2ParameterDescriptor in it this line will fail to compile.
+    const auto param_descriptor = std::get<Grib2ParameterDescriptor>(templ.descriptors);
+
+    std::string parameter = param_descriptor.get_abbrev(discipline);
+
+    return parameter;
+}
+
+template <size_t N, typename... Descrs>
 std::string Grib2ProductDef::get_summary_string(const Grib2Template<N, Descrs...>& templ) const {
     // As soon as I have a product definition template that doesn't have a Grib2LayerDescriptor in it this line will fail to compile.
     const auto layer_descr = std::get<Grib2LayerDescriptor>(templ.descriptors);
@@ -211,6 +226,7 @@ std::shared_ptr<Grib2ProductDef> select_product_def_template(g2int template_num,
     struct name : public name##Base, public Grib2ProductDef { \
         name(const name##Base& base) : name##Base(base) {} \
         Grib2Key get_key() const { return Grib2ProductDef::get_key(*this); }; \
+        std::string get_abbrev(unsigned short discipline) const { return Grib2ProductDef::get_abbrev(*this, discipline); }; \
         std::string get_summary_string(unsigned int discipline) const { return Grib2ProductDef::get_summary_string(*this); }; \
         std::chrono::duration<unsigned int> get_forecast_time() const { return Grib2ProductDef::get_forecast_time(*this); }; \
         Level get_level() const { return Grib2ProductDef::get_level(*this); } \
