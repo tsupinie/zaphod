@@ -33,8 +33,13 @@ E Grib2Table<E>::get_entry(unsigned int number) const {
 
 template <typename E>
 E Grib2Table<E>::get_entry_by_meaning(const std::string& meaning) const {
+    std::string meaning_lower;
+    for (auto it = meaning.begin(); it != meaning.end(); it++) {
+        meaning_lower.push_back(std::tolower(*it));
+    }
+
     for (auto it = this->entries.begin() ; it != this->entries.end() ; it++) {
-        if (it->meaning == meaning) return *it;
+        if (it->meaning == meaning_lower) return *it;
     }
 
     throw std::runtime_error("Table \"" + this->name + "\" has no entry with meaning \"" + meaning + "\"");
