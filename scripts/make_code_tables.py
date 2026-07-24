@@ -6,6 +6,7 @@ import urllib.error as urlerr
 import re
 from pathlib import Path
 from typing import TextIO, Any
+import argparse
 
 BASE_URL = "https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc"
 TABLES = ["0.0", "4.1", "4.2", "4.5"]
@@ -216,6 +217,17 @@ class Table_4_1(Table):
     
     def get_table(self, discipline: str):
         return self.rows[discipline]
+    
+    def check_unique_meanings(self):
+        for sub_id, table in self.rows.items():
+            meanings: set[str] = set()
+            meanings_called_out: set[str] = set()
+            for row in table:
+                if row['meaning'] in meanings and row['meaning'] not in meanings_called_out:
+                    print(f'In table 4.1, subtable {sub_id}: meaning "{row['meaning']}" appears multiple times')
+                    meanings_called_out.add(row['meaning'])
+
+                meanings.add(row['meaning'])
 
     
 class Table_4_2(Table):
@@ -263,16 +275,49 @@ class Table_4_2(Table):
         fout.write('    });\n\n')
         fout.write('    return tables.at(std::to_string(discipline) + "." + std::to_string(category));\n')
         fout.write('}\n\n')
-    
 
-def parse_remote_tables():
+    def check_unique_meanings(self):
+        for sub_id, table in self.rows.items():
+            meanings: set[str] = set()
+            meanings_called_out: set[str] = set()
+            for row in table:
+                if row['meaning'] in meanings and row['meaning'] not in meanings_called_out:
+                    print(f'In table 4.2, subtable {sub_id}: meaning "{row['meaning']}" appears multiple times')
+                    meanings_called_out.add(row['meaning'])
+
+                meanings.add(row['meaning'])
+
+    def check_unique_abbrevs(self):
+        abbrevs: set[str] = set()
+        abbrevs_called_out: set[str] = set()
+        for sub_id, table in self.rows.items():
+            for row in table:
+                if row['meaning'].lower() != 'missing' and row['abbrev'] in abbrevs and row['abbrev'] not in abbrevs_called_out:
+                    print(f'In table 4.2, abbreviation "{row['abbrev']}" appears multiple times')
+                    abbrevs_called_out.add(row['abbrev'])
+
+                abbrevs.add(row['abbrev'])
+
+
+def parse_remote_tables(check_uniqueness=False):
     tables: dict[str, Table] = {}
 
     for table in TABLES:
         if table == "4.1":
-            tables[table] = Table_4_1.from_nco()
+            tab = Table_4_1.from_nco()
+
+            if check_uniqueness:
+                tab.check_unique_meanings()
+
+            tables[table] = tab
         elif table == "4.2":
-            tables[table] = Table_4_2.from_nco(tables['4.1'])
+            tab = Table_4_2.from_nco(tables['4.1'])
+
+            if check_uniqueness:
+                tab.check_unique_meanings()
+                tab.check_unique_abbrevs()
+
+            tables[table] = tab
         else:
             tables[table] = Table.from_nco(table)
 
@@ -291,11 +336,14 @@ def output_cpp(tables: dict[str, Table], fname: Path):
 
 
 def main():
-    cpp_include = Path('include/zaphod')
-    cpp_src = Path('src/zaphod')
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--check-unique', action='store_true')
+    ap.add_argument('--output-path', type=Path, default=Path('src/zaphod'))
 
-    tables = parse_remote_tables()
-    output_cpp(tables, fname=(cpp_src / 'table_defs.cpp'))
+    args = ap.parse_args()
+
+    tables = parse_remote_tables(check_uniqueness=args.check_unique)
+    output_cpp(tables, fname=(args.output_path / 'table_defs.cpp'))
     
 
 
