@@ -28,8 +28,8 @@ std::ostream& operator<<(std::ostream& stream, const Grib2TableEntryUnits& entry
 struct Grib2TableEntryUnitsAbbrev {
     unsigned short number;
     std::string meaning;
-    std::string abbrev;
     std::string units;
+    std::string abbrev;
 };
 
 std::ostream& operator<<(std::ostream& stream, const Grib2TableEntryUnitsAbbrev& entry);
