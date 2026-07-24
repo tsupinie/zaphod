@@ -52,6 +52,8 @@ def parse_url(url: str, column_header_names: dict[str, str]):
 
                 for col_name, col in zip(columns, row.find_all('td')):
                     row_dict[col_name] = tag_clean_strings(col)
+                    if col_name == 'units' and (row_dict[col_name] in ['non-dim', '-', 'Numeric'] or 'table' in row_dict[col_name].lower()):
+                        row_dict[col_name] = ""
 
                 if 'reserved' not in row_dict[columns[1]].lower():
                     table.append(row_dict)
