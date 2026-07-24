@@ -249,6 +249,14 @@ class Table_4_2(Table):
         column_header_names = {'Number': 'index', 'Parameter': 'meaning', 'Units': 'units', 'Abbrev': 'abbrev'}
         tables: dict[str, list[dict]] = {}
 
+        def trim_end(orig: str, *evict: list[str]):
+            ret = orig
+
+            for ev in evict[::-1]:
+                if ret.endswith(" " + ev):
+                    ret = ret[:-(len(ev) + 1)]
+            return ret
+
         for disc in table_4_1.get_disciplines():
             for row in table_4_1.get_table(disc):
                 category = row['index']
@@ -258,7 +266,11 @@ class Table_4_2(Table):
                     continue
 
                 for row_4_2 in tab_4_2:
-                    row_4_2['units'] = row_4_2['units'].rstrip(row_4_2['abbrev']).strip()
+                    # Sometimes the docs have malformed html (missing </td> tags), and this results in units and
+                    #   abbreviations getting tacked on where they shouldn't have. This trims that stuff off.
+                    row_4_2['units'] = trim_end(row_4_2['units'], row_4_2['abbrev'])
+                    row_4_2['meaning'] = trim_end(row_4_2['meaning'], row_4_2['units'].lower(),
+                                                  row_4_2['abbrev'].lower())
 
                 tables[f"{disc}.{category}"] = tab_4_2
         return Table_4_2("", tables)
