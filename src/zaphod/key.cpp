@@ -31,6 +31,28 @@ Grib2Key Grib2Key::and_disc_cat_param(const std::string& discipline, const std::
     return g2key;
 }
 
+Grib2Key Grib2Key::and_disc_cat(const std::string& discipline, const std::string& category) {
+    auto disc_table = g2_tables.get_table_0_0();
+    auto disc_entry = disc_table.get_entry_by_meaning(discipline);
+
+    auto cat_table = g2_tables.get_table_4_1(disc_entry.number);
+    auto cat_entry = cat_table.get_entry_by_meaning(category);
+
+    Grib2Key g2key(*this);
+    g2key.discipline = disc_entry.number;
+    g2key.param_category = cat_entry.number;
+    return g2key;
+}
+
+Grib2Key Grib2Key::and_discipline(const std::string& discipline) {
+    auto table = g2_tables.get_table_0_0();
+    auto entry = table.get_entry_by_meaning(discipline);
+
+    Grib2Key g2key(*this);
+    g2key.discipline = entry.number;
+    return g2key;
+}
+
 Grib2Key Grib2Key::and_level_1_type(const std::string& level_1_type) {
     auto table = g2_tables.get_table_4_5();
     auto entry = table.get_entry_by_meaning(level_1_type);
