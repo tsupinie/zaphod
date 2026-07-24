@@ -13,25 +13,25 @@ TABLES = ["0.0", "4.1", "4.2", "4.5"]
 
 DESCRIPTION_TRANSLATIONS = {
     '0.0': {
-        'Meteorological Products': 'Meteorology',
-        'Hydrological Products': 'Hydrology',
-        'Land Surface Products': 'Land Surface',
-        'Satellite Remote Sensing Products': 'Satellite Remote Sensing',
-        'Space Weather Products': 'Space Weather',
-        'Oceanographic Products': 'Oceanography',
+        'meteorological products': 'meteorology',
+        'hydrological products': 'hydrology',
+        'land surface products': 'land surface',
+        'satellite remote sensing products': 'satellite remote sensing',
+        'space weather products': 'space weather',
+        'oceanographic products': 'oceanography',
     },
     '4.5': {
-        'Ground or Water Surface' : 'Surface',
-        'Cloud Base Level': 'Cloud Base',
-        'Level of Cloud Tops': 'Cloud Top',
-        'Level of 0o C Isotherm': 'Freezing Level',
-        'Level of Adiabatic Condensation Lifted from the Surface': 'Lifted Condensation Level',
-        'Level of neutral buoyancy or equilibrium': 'Equilibrium level',
-        'Nominal Top of the atmosphere': 'Top of Atmosphere',
-        'Isobaric Surface': 'Isobaric Level',
-        'Specific Altitude Above Mean Sea Level': 'Height Above MSL',
-        'Specified Height Level Above Ground': 'Height AGL',
-        'Depth Below Land Surface': 'Depth Below Ground',
+        'ground or water surface' : 'surface',
+        'cloud base level': 'cloud base',
+        'level of cloud tops': 'cloud top',
+        'level of 0o c isotherm': 'freezing level',
+        'level of adiabatic condensation lifted from the surface': 'lifted condensation level',
+        'level of neutral buoyancy or equilibrium': 'equilibrium level',
+        'nominal top of the atmosphere': 'top of atmosphere',
+        'isobaric surface': 'isobaric level',
+        'specific altitude above mean sea level': 'height above msl',
+        'specified height level above ground': 'height agl',
+        'depth below land surface': 'depth below ground',
     }
 }
 
@@ -97,6 +97,9 @@ def parse_url_4_1(url: str):
 
                 for col_name, col in zip(columns, row.find_all('td')):
                     row_dict[col_name] = tag_clean_strings(col)
+
+                    if col_name == 'meaning':
+                        row_dict[col_name] = row_dict[col_name].lower()
 
                 if 'reserved' not in row_dict['meaning'].lower():
                     table.append(row_dict)
