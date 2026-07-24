@@ -20,6 +20,10 @@ DESCRIPTION_TRANSLATIONS = {
         'space weather products': 'space weather',
         'oceanographic products': 'oceanography',
     },
+    '4.2.0.2': {
+        'σ coordinate vertical velocity': 'sigma coordinate vertical velocity',
+        'η coordinate vertical velocity': 'eta coordinate vertical velocity',
+    },
     '4.5': {
         'ground or water surface' : 'surface',
         'cloud base level': 'cloud base',
@@ -274,6 +278,9 @@ class Table_4_2(Table):
                     row_4_2['units'] = trim_end(row_4_2['units'], row_4_2['abbrev'])
                     row_4_2['meaning'] = trim_end(row_4_2['meaning'], row_4_2['units'].lower(),
                                                   row_4_2['abbrev'].lower())
+                    
+                    table_id = f'4.2.{disc}.{category}'
+                    row_4_2['meaning'] = DESCRIPTION_TRANSLATIONS.get(table_id, {}).get(row_4_2['meaning'], row_4_2['meaning'])
 
                 tables[f"{disc}.{category}"] = tab_4_2
         return Table_4_2("", tables)
