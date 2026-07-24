@@ -36,6 +36,7 @@ DESCRIPTION_TRANSLATIONS = {
         'specific altitude above mean sea level': 'height above msl',
         'specified height level above ground': 'height agl',
         'depth below land surface': 'depth below ground',
+        'level at specified pressure difference from ground to level': 'pressure difference from ground',
     }
 }
 

@@ -2243,7 +2243,7 @@ Grib2Table<Grib2TableEntryUnits> Grib2TableManager::get_table_4_5() const {
         {105, "hybrid level", ""},
         {106, "depth below ground", "m"},
         {107, "isentropic level", "K"},
-        {108, "level at specified pressure difference from ground to level", "Pa"},
+        {108, "pressure difference from ground", "Pa"},
         {109, "potential vorticity surface", "K m2 kg-1 s-1"},
         {111, "eta level", ""},
         {113, "logarithmic hybrid level", ""},
