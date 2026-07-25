@@ -18,13 +18,13 @@ extern "C" {
 #include "grid_templates.h"
 #include "key.h"
 #include "product_templates.h"
+#include "id_section.h"
 
 namespace zaphod {
 
 class Grib2Field {
     public:
     Grib2Field(std::vector<char> buffer, g2int ifld);
-    Grib2Field(const Grib2Field& other) : field{other.field}, product_def(other.product_def), grid_def{other.grid_def}, buffer(other.buffer), i_field(other.i_field) {}
     std::vector<float> get_data();
     void get_data(float* buf);
 
@@ -52,6 +52,7 @@ class Grib2Field {
 
     private:
     std::shared_ptr<gribfield> field;
+    Grib2IdSection id_section;
     std::shared_ptr<Grib2ProductDef> product_def;
     std::shared_ptr<Grib2GridDef> grid_def;
     g2int i_field;

@@ -38,6 +38,7 @@ Grib2Field::Grib2Field(std::vector<char> buffer, g2int ifld) {
     this->buffer = buffer;
     this->i_field = ifld;
 
+    this->id_section = Grib2IdSection::from_buffer(this->field->idsect);
     this->grid_def = select_grid_def_template(this->field->igdtnum, this->field->igdtmpl);
     this->product_def = select_product_def_template(this->field->ipdtnum, this->field->ipdtmpl);
 }
@@ -86,13 +87,7 @@ std::string Grib2Field::noaa_abbreviation() const {
 }
 
 std::chrono::system_clock::time_point Grib2Field::init_datetime() const {
-    auto ref_time = time_point_from_buffer(&this->field->idsect[5]);
-
-    if (this->field->idsect[4] == 0 || this->field->idsect[4] == 1) {
-        return ref_time;
-    }
-
-    return ref_time - this->fcst_time();
+    return this->id_section.init_datetime(this->fcst_time());
 }
 
 std::chrono::system_clock::duration Grib2Field::fcst_time() const {
