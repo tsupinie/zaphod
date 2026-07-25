@@ -38,3 +38,12 @@ std::chrono::duration<unsigned int> zaphod::duration_from_buffer(const g2int* bu
 
     return dur;
 }
+
+std::string zaphod::time_point_to_string(const std::chrono::system_clock::time_point& tp, const std::string& format) {
+    char time_str[100] = {};
+
+    std::time_t tp_c = std::chrono::system_clock::to_time_t(tp);
+    std::strftime(time_str, sizeof(time_str), format.c_str(), std::localtime(&tp_c));
+
+    return time_str;
+}

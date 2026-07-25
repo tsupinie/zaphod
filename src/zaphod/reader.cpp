@@ -104,10 +104,7 @@ std::chrono::system_clock::time_point Grib2Field::valid_datetime() const {
 }
 
 std::ostream& zaphod::operator<<(std::ostream& stream, const Grib2Field& field) {
-    char time_str[100] = {};
-    auto init_dt = field.init_datetime();
-    std::time_t init_dt_c = std::chrono::system_clock::to_time_t(init_dt);
-    std::strftime(time_str, sizeof(time_str), "%Y%m%d%H", std::localtime(&init_dt_c));
+    std::string time_str = time_point_to_string(field.init_datetime(), "%Y%m%d%H");
 
     stream << "d=" << time_str << ":" << field.noaa_abbreviation() << ":" << field.get_product_summary_string();
     return stream;

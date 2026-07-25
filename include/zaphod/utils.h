@@ -14,6 +14,7 @@ namespace zaphod {
 float value_from_buffer(const g2int* buf);
 std::chrono::system_clock::time_point time_point_from_buffer(const g2int* buf);
 std::chrono::duration<unsigned int> duration_from_buffer(const g2int* buf);
+std::string time_point_to_string(const std::chrono::system_clock::time_point& tp, const std::string& format);
 
 class ParameterNotInMessage : public std::runtime_error {
     public:
