@@ -14,6 +14,14 @@ std::ostream& zaphod::operator<<(std::ostream& stream, const Grib2KeyNotPresent&
     return stream;
 }
 
+Grib2Key Grib2Key::and_abbrev(const std::string& abbrev) const {
+    Grib2Key g2key(*this);
+
+    std::tie(g2key.discipline, g2key.param_category, g2key.param_number) = g2_tables.get_entry_by_abbrev(abbrev);
+
+    return g2key;
+}
+
 Grib2Key Grib2Key::and_disc_cat_param(const std::string& discipline, const std::string& category, const std::string& param) {
     auto disc_table = g2_tables.get_table_0_0();
     auto disc_entry = disc_table.get_entry_by_meaning(discipline);

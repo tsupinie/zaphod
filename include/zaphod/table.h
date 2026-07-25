@@ -59,6 +59,8 @@ struct Grib2TableManager {
     Grib2Table<Grib2TableEntry> get_table_4_1(unsigned short discipline) const;
     Grib2Table<Grib2TableEntryUnitsAbbrev> get_table_4_2(unsigned short discipline, unsigned short category) const;
     Grib2Table<Grib2TableEntryUnits> get_table_4_5() const;
+
+    std::tuple<unsigned short, unsigned short, unsigned short> get_entry_by_abbrev(const std::string& abbrev) const;
 };
 
 const Grib2TableManager g2_tables;

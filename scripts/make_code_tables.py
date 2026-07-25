@@ -303,6 +303,33 @@ class Table_4_2(Table):
         fout.write('    return tables.at(std::to_string(discipline) + "." + std::to_string(category));\n')
         fout.write('}\n\n')
 
+    def make_cpp_abbrev_lookup(self, fout: TextIO):
+        fout.write(f"std::tuple<unsigned short, unsigned short, unsigned short> Grib2TableManager::get_entry_by_abbrev(const std::string& abbrev) const ")
+        fout.write("{\n")
+        fout.write('    std::map<std::string, std::tuple<unsigned short, unsigned short, unsigned short>> abbrev_lookup({\n')
+
+        abbrevs = {}
+
+        for table_id, tab in self.rows.items():
+            disc, cat = table_id.split('.')
+            for row in tab:
+                num = row['index']
+                if row['abbrev'] not in abbrevs:
+                    abbrevs[row['abbrev']] = (disc, cat, num)
+
+        for idx, (abbrev, (disc, cat, num)) in enumerate(abbrevs.items()):
+            fout.write('        {' if idx % 3 == 0 else '{')
+            fout.write(f'"{abbrev}", ')
+            fout.write('{')
+            fout.write(f'{disc}, {cat}, {num}')
+            fout.write('}},')
+
+            fout.write('\n' if (idx + 1) % 3 == 0 else ' ')
+
+        fout.write('    });\n\n')
+        fout.write('    return abbrev_lookup.at(abbrev);\n')
+        fout.write('}\n\n')
+
     def check_unique_meanings(self):
         for sub_id, table in self.rows.items():
             meanings: set[str] = set()
@@ -358,6 +385,9 @@ def output_cpp(tables: dict[str, Table], fname: Path):
 
         for key, tab in tables.items():
             tab.to_cpp(fout)
+
+            if isinstance(tab, Table_4_2):
+                tab.make_cpp_abbrev_lookup(fout)
 
         fout.write('#endif\n')
 

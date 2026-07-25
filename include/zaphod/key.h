@@ -78,6 +78,11 @@ struct Grib2Key {
     KEY_VARIABLE(float, level_2)
     KEY_VARIABLE(std::chrono::system_clock::duration, agg_length)
 
+    static Grib2Key with_abbrev(const std::string& abbrev) {
+        return Grib2Key().and_abbrev(abbrev);
+    }
+    Grib2Key and_abbrev(const std::string& abbrev) const;
+
     static Grib2Key with_disc_cat_param(const std::string& discipline, const std::string& category, const std::string& param) { 
         return Grib2Key().and_disc_cat_param(discipline, category, param);
     }
