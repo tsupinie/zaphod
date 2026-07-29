@@ -42,9 +42,11 @@ struct Grib2ProcessIdDescriptor {
 struct Grib2ForecastTimeDescriptor {
     g2int data_cutoff_hours;
     g2int data_cutoff_minutes;
-    std::chrono::duration<unsigned int> forecast_time;
+    std::chrono::duration<long long> forecast_time;
+    std::chrono::duration<long long> native_unit;
     
     static Grib2ForecastTimeDescriptor from_buffer(const g2int* buf);
+    std::string get_summary_string() const;
 };
 
 struct Level {
@@ -198,10 +200,12 @@ template <size_t N, typename... Descrs>
 std::string Grib2ProductDef::get_summary_string(const Grib2Template<N, Descrs...>& templ) const {
     // As soon as I have a product definition template that doesn't have a Grib2LayerDescriptor in it this line will fail to compile.
     const auto layer_descr = std::get<Grib2LayerDescriptor>(templ.descriptors);
+    const auto fcst_time_descr = std::get<Grib2ForecastTimeDescriptor>(templ.descriptors);
 
     std::string parameter = layer_descr.get_summary_string();
+    std::string fcst_time = fcst_time_descr.get_summary_string();
 
-    return parameter;
+    return parameter + ":" + fcst_time;
 }
 
 template <size_t N, typename... Descrs>

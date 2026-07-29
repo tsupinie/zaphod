@@ -21,22 +21,22 @@ std::chrono::system_clock::time_point zaphod::time_point_from_buffer(const g2int
     return std::chrono::system_clock::from_time_t(std::mktime(&t));
 }
 
-std::chrono::duration<unsigned int> zaphod::duration_from_buffer(const g2int* buf) {
-    unsigned int units = buf[0];
-    int fcst_time_raw = buf[1];
-    
-    std::chrono::duration<long long> dur;
-
-    switch(units) {
-        case 0: dur = fcst_time_raw * 1min; break;
-        case 1: dur = fcst_time_raw * 1h; break;
-        case 2: dur = fcst_time_raw * 24h; break;
-        case 13: dur = fcst_time_raw * 1s; break;
-        case 255: dur = -1s; break;
+std::chrono::duration<long long> zaphod::duration_units(const g2int val) {
+    switch(val) {
+        case 0: return 1min;
+        case 1: return 1h;
+        case 2: return 24h;
+        case 13: return 1s;
+        case 255: return -1s;
         default: throw std::runtime_error("Unhandled time units");
     }
+}
 
-    return dur;
+std::chrono::duration<long long> zaphod::duration_from_buffer(const g2int* buf) {
+    int fcst_time_raw = buf[1];
+    std::chrono::duration<long long> dur = duration_units(buf[0]);
+
+    return dur < 0s ? dur : dur * fcst_time_raw;
 }
 
 std::string zaphod::time_point_to_string(const std::chrono::system_clock::time_point& tp, const std::string& format) {

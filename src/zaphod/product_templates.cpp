@@ -4,6 +4,7 @@
 #include <zaphod/product_templates.h>
 #include <zaphod/table.h>
 
+using namespace std::chrono_literals;
 using namespace zaphod;
 
 Grib2ParameterDescriptor Grib2ParameterDescriptor::from_buffer(const g2int* buf) {
@@ -37,7 +38,23 @@ Grib2ProcessIdDescriptor Grib2ProcessIdDescriptor::from_buffer(const g2int* buf)
 }
 
 Grib2ForecastTimeDescriptor Grib2ForecastTimeDescriptor::from_buffer(const g2int* buf) {
-    return {buf[0], buf[1], duration_from_buffer(buf + 2)};
+    return {buf[0], buf[1], duration_from_buffer(buf + 2), duration_units(buf[2])};
+}
+
+std::string Grib2ForecastTimeDescriptor::get_summary_string() const {
+    if (this->forecast_time / 1s == 0) return "anl";
+
+    std::string unit;
+    if (this->native_unit == 1s) unit = "second";
+    else if (this->native_unit == 1min) unit = "minute";
+    else if (this->native_unit == 1h) unit = "hour";
+    else if (this->native_unit == 24h) unit = "day";
+    else if (this->native_unit == -1s) return "NaT";
+    else throw std::runtime_error("Unhandled units in get_summary_string()");
+
+    auto fcst_time = this->forecast_time / this->native_unit;
+
+    return std::to_string(fcst_time) + " " + unit + " fcst";
 }
 
 Grib2LayerDescriptor Grib2LayerDescriptor::from_buffer(const g2int* buf) {
