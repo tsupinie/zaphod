@@ -74,6 +74,17 @@ struct Grib2LambertProjectionDescriptor {
     static Grib2LambertProjectionDescriptor from_buffer(const g2int* buf);
 };
 
+struct Grib2GaussianGridDescriptor {
+    float latitude_first;
+    float longitude_first;
+    float latitude_last;
+    float longitude_last;
+    float di;
+    unsigned int n_parallels;
+
+    static Grib2GaussianGridDescriptor from_buffer(const g2int* buf);
+};
+
 struct Grib2GridDef {
     virtual std::string get_proj_type() const = 0;
     virtual std::map<std::string, float> get_proj_parameters() const = 0;
@@ -131,6 +142,13 @@ using Grib2GridDefLambertBase = Grib2Template<30, Grib2Descriptor<0, Grib2EarthS
                                                   Grib2Descriptor<18, Grib2ScanFlagsDescriptor>>;
 
 GRIB2_GRID_TEMPLATE(Grib2GridDefLambert, "lcc")
+
+using Grib2GridDefGaussianBase = Grib2Template<40, Grib2Descriptor<0, Grib2EarthShapeDescriptor>,
+                                                   Grib2Descriptor<7, Grib2SpatialGridDescriptor>,
+                                                   Grib2Descriptor<11, Grib2GaussianGridDescriptor>,
+                                                   Grib2Descriptor<18, Grib2ScanFlagsDescriptor>>;
+
+GRIB2_GRID_TEMPLATE(Grib2GridDefGaussian, "gaussian")
 
 std::tuple<float, float> transform_point(float x_in, float y_in, const NS_PROJ::operation::CoordinateTransformerNNPtr& trans);
 NS_PROJ::operation::CoordinateTransformerNNPtr make_transformer(NS_PROJ::crs::CRSNNPtr crs_from, NS_PROJ::crs::CRSNNPtr crs_to, PJ_CONTEXT* ctx);

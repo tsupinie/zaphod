@@ -4,6 +4,7 @@
 #include <chrono>
 
 #include <zaphod/grid_templates.h>
+#include <zaphod/legendre.h>
 
 using namespace zaphod;
 
@@ -153,6 +154,20 @@ Grib2LambertProjectionDescriptor Grib2LambertProjectionDescriptor::from_buffer(c
     };
 }
 
+Grib2GaussianGridDescriptor Grib2GaussianGridDescriptor::from_buffer(const g2int* buf) {
+    // Should take into account the basic angle division from the file at some point. For now, just assume 1e-6.
+    const float angle_unit = 1e-6;
+
+    return {
+        buf[0] * angle_unit,
+        buf[1] * angle_unit,
+        buf[3] * angle_unit,
+        buf[4] * angle_unit,
+        buf[5] * angle_unit,
+        static_cast<unsigned int>(buf[6])
+    };
+}
+
 
 NS_PROJ::operation::CoordinateTransformerNNPtr Grib2GridDef::get_fwd_transform(PJ_CONTEXT* ctx) const {
     auto crs = this->get_crs();
@@ -177,6 +192,7 @@ std::shared_ptr<Grib2GridDef> zaphod::select_grid_def_template(g2int template_nu
     switch (template_num) {
         GRIB2_GRID_DEFINITION_CASE(Grib2GridDefLatLon)
         GRIB2_GRID_DEFINITION_CASE(Grib2GridDefLambert)
+        GRIB2_GRID_DEFINITION_CASE(Grib2GridDefGaussian)
         default:
             throw std::runtime_error("Unknown grid template number: " + std::to_string(template_num));
     }
@@ -431,4 +447,126 @@ void Grib2GridDefLambert::get_lonlats(float* lons_buf, float* lats_buf) const {
     }
 
     proj_context_destroy(ctx);
+}
+
+NS_PROJ::crs::ProjectedCRSNNPtr Grib2GridDefGaussian::get_crs() const {
+    NS_PROJ::util::PropertyMap props;
+    props.set("name", "");
+
+    // This is hard coded to convert to a cartesian space, but for lat/lon projections, I don't actually want to do this.
+    auto conversion = NS_PROJ::operation::Conversion::createEquidistantCylindrical(props,
+        NS_PROJ::common::Angle(0),
+        NS_PROJ::common::Angle(0),
+        NS_PROJ::common::Length(0),
+        NS_PROJ::common::Length(0)
+    );
+
+    const auto earth_shape = std::get<Grib2EarthShapeDescriptor>(this->descriptors);
+
+    auto crs = make_proj_crs(earth_shape.get_proj_ellipsoid(), conversion);
+    return NN_CHECK_ASSERT(NS_PROJ::util::nn_dynamic_pointer_cast<NS_PROJ::crs::ProjectedCRS>(crs));
+}
+
+std::map<std::string, float> Grib2GridDefGaussian::get_proj_parameters() const {
+    const auto earth_shape = std::get<Grib2EarthShapeDescriptor>(this->descriptors);
+
+    std::map<std::string, float> params;
+    params["a"] = earth_shape.earth_semimajor;
+    params["b"] = earth_shape.earth_semiminor;
+    return params;
+}
+
+g2int Grib2GridDefGaussian::get_ni() const {
+    return std::get<Grib2SpatialGridDescriptor>(this->descriptors).ni;
+}
+
+g2int Grib2GridDefGaussian::get_nj() const {
+    return std::get<Grib2SpatialGridDescriptor>(this->descriptors).nj;
+}
+
+std::vector<float> Grib2GridDefGaussian::get_xs() const {
+    const auto grid = std::get<Grib2SpatialGridDescriptor>(this->descriptors);
+    std::vector<float> xs(grid.ni);
+
+    this->get_xs(xs.data());
+
+    return xs;
+}
+
+void Grib2GridDefGaussian::get_xs(float* buf) const {
+    const auto grid = std::get<Grib2SpatialGridDescriptor>(this->descriptors);
+    const auto scan_flags = std::get<Grib2ScanFlagsDescriptor>(this->descriptors);
+    const auto projection = std::get<Grib2GaussianGridDescriptor>(this->descriptors);
+    
+    const float inc_sign = scan_flags.first_col_is_west ? 1 : -1;
+
+    for (size_t i = 0; i < grid.ni; i++) {
+        buf[i] = projection.longitude_first + inc_sign * i * projection.di;
+    }
+}
+
+std::vector<float> Grib2GridDefGaussian::get_ys() const {
+    const auto grid = std::get<Grib2SpatialGridDescriptor>(this->descriptors);
+    std::vector<float> ys(grid.nj);
+
+    this->get_ys(ys.data());
+
+    return ys;
+}
+
+void Grib2GridDefGaussian::get_ys(float* buf) const {
+    const auto grid = std::get<Grib2SpatialGridDescriptor>(this->descriptors);
+    const auto scan_flags = std::get<Grib2ScanFlagsDescriptor>(this->descriptors);
+    const auto projection = std::get<Grib2GaussianGridDescriptor>(this->descriptors);
+    
+    const float inc_sign = scan_flags.first_row_is_south ? 1 : -1;
+
+    std::vector<double> legendre_roots = _legendre::calculate_legendre_roots(grid.nj);
+
+    if (inc_sign > 0)
+        std::sort(legendre_roots.begin(), legendre_roots.end(), std::less<double>());
+    else
+        std::sort(legendre_roots.begin(), legendre_roots.end(), std::greater<double>());
+
+    size_t j = 0;
+
+    for (auto it = legendre_roots.begin(); it != legendre_roots.end(); it++) {
+        buf[j] = asin(*it) * 180. / M_PI;
+        j++;
+    }
+}
+
+std::tuple<std::vector<float>, std::vector<float>> Grib2GridDefGaussian::get_lonlats() const {
+    const auto grid = std::get<Grib2SpatialGridDescriptor>(this->descriptors);
+
+    std::vector<float> lons(grid.ni * grid.nj);
+    std::vector<float> lats(grid.ni * grid.nj);
+
+    this->get_lonlats(lons.data(), lats.data());
+
+    return std::tuple<std::vector<float>, std::vector<float>>(lons, lats);
+}
+
+void Grib2GridDefGaussian::get_lonlats(float* buf_lons, float* buf_lats) const {
+    const auto grid = std::get<Grib2SpatialGridDescriptor>(this->descriptors);
+    const auto scan_flags = std::get<Grib2ScanFlagsDescriptor>(this->descriptors);
+    const auto projection = std::get<Grib2GaussianGridDescriptor>(this->descriptors);
+
+    const float inc_sign_lon = scan_flags.first_col_is_west ? 1 : -1;
+    const float inc_sign_lat = scan_flags.first_row_is_south ? 1 : -1;
+
+    const std::vector<float> lats = this->get_ys();
+
+    size_t j = 0;
+    for (auto it_lat = lats.begin(); it_lat != lats.end(); it_lat++) {
+        for (size_t i = 0; i < grid.ni; i++) {
+            float lon = projection.longitude_first + inc_sign_lon * i * projection.di;
+
+            size_t idx = i + grid.ni * j;
+            buf_lons[idx] = lon;
+            buf_lats[idx] = *it_lat;
+        }
+
+        j++;
+    }
 }
