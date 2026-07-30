@@ -148,7 +148,7 @@ using Grib2GridDefGaussianBase = Grib2Template<40, Grib2Descriptor<0, Grib2Earth
                                                    Grib2Descriptor<11, Grib2GaussianGridDescriptor>,
                                                    Grib2Descriptor<18, Grib2ScanFlagsDescriptor>>;
 
-GRIB2_GRID_TEMPLATE(Grib2GridDefGaussian, "gaussian")
+GRIB2_GRID_TEMPLATE(Grib2GridDefGaussian, "latlon")
 
 std::tuple<float, float> transform_point(float x_in, float y_in, const NS_PROJ::operation::CoordinateTransformerNNPtr& trans);
 NS_PROJ::operation::CoordinateTransformerNNPtr make_transformer(NS_PROJ::crs::CRSNNPtr crs_from, NS_PROJ::crs::CRSNNPtr crs_to, PJ_CONTEXT* ctx);
