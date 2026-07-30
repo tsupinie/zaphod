@@ -1,9 +1,9 @@
+#ifndef __ZAPHOD_LEGENDRE__
+#define __ZAPHOD_LEGENDRE__
 
 #include <vector>
 #include <tuple>
 #include <cmath>
-#include <iostream>
-#include <algorithm>
 
 namespace zaphod {
 namespace _legendre {
@@ -61,3 +61,5 @@ std::vector<double> calculate_legendre_roots(unsigned int n) {
 }
 
 }
+
+#endif
