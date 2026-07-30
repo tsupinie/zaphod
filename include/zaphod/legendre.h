@@ -5,8 +5,7 @@
 #include <tuple>
 #include <cmath>
 
-namespace zaphod {
-namespace _legendre {
+namespace zaphod::_legendre {
 
 // Adapted from https://thoughts-on-coding.com/2019/04/25/numerical-methods-in-cpp-part-2-gauss-legendre-integration/
 
@@ -57,7 +56,6 @@ std::vector<double> calculate_legendre_roots(unsigned int n) {
     }
 
     return roots;
-}
 }
 
 }
