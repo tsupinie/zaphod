@@ -131,7 +131,7 @@ std::shared_ptr<Grib2GridDef> select_grid_def_template(g2int template_num, g2int
 
 using Grib2GridDefLatLonBase = Grib2Template<0, Grib2Descriptor<0, Grib2EarthShapeDescriptor>,
                                                 Grib2Descriptor<7, Grib2SpatialGridDescriptor>,
-                                                Grib2Descriptor<9, Grib2LatLonProjectionDescriptor>,
+                                                Grib2Descriptor<11, Grib2LatLonProjectionDescriptor>,
                                                 Grib2Descriptor<18, Grib2ScanFlagsDescriptor>>;
 
 GRIB2_GRID_TEMPLATE(Grib2GridDefLatLon, "latlon")

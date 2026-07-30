@@ -129,12 +129,12 @@ Grib2LatLonProjectionDescriptor Grib2LatLonProjectionDescriptor::from_buffer(con
     const float angle_unit = 1e-6;
 
     return {
-        buf[11] * angle_unit,
-        buf[12] * angle_unit,
-        buf[14] * angle_unit,
-        buf[15] * angle_unit,
-        buf[16] * angle_unit,
-        buf[17] * angle_unit
+        buf[0] * angle_unit,
+        buf[1] * angle_unit,
+        buf[3] * angle_unit,
+        buf[4] * angle_unit,
+        buf[5] * angle_unit,
+        buf[6] * angle_unit
     };
 }
 
