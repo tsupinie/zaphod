@@ -2,6 +2,7 @@
 #include <cmath>
 #include <iostream>
 #include <chrono>
+#include <algorithm>
 
 #include <zaphod/grid_templates.h>
 #include <zaphod/legendre.h>
