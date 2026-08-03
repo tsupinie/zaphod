@@ -41,8 +41,8 @@ DESCRIPTION_TRANSLATIONS = {
 }
 
 def cleanup_units(units: str):
-    units = re.sub(r"([a-z]+)[\s]*-([\d/]+)", r"/ \1\2", units)
-    units = re.sub(r"([a-z]+)1", r"\1", units)
+    units = re.sub(r"([a-z]+)[\s]*-([\d/]+)", r"/ \1^\2", units)
+    units = re.sub(r"([a-z]+)\^1", r"\1", units)
     units = re.sub(r"[\s]*/[\s]*", "/", units)
     units = re.sub(r"^/", "1/", units)
     return units
