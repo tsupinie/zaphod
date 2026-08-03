@@ -104,6 +104,18 @@ struct Grib2AggregationDescriptor {
     static Grib2AggregationDescriptor from_buffer(const g2int* buf);
 };
 
+struct Grib2AerosolDescriptor {
+    g2int aerosol_type;
+    g2int size_interval_type;
+    float first_size;
+    float second_size;
+    g2int wavelength_interval_type;
+    float first_wavelength;
+    float second_wavelength;
+
+    static Grib2AerosolDescriptor from_buffer(const g2int* buf);
+};
+
 struct Grib2ProductDef {
     virtual Grib2Key get_key() const = 0;
 
@@ -301,6 +313,13 @@ using Grib2ProductEnsMemAggBase = Grib2Template<11, Grib2Descriptor<0, Grib2Para
 
 GRIB2_PRODUCT_TEMPLATE(Grib2ProductEnsMemAgg)
 
+using Grib2ProductAerosolBase = Grib2Template<48, Grib2Descriptor<0, Grib2ParameterDescriptor>,
+                                                  Grib2Descriptor<2, Grib2AerosolDescriptor>,
+                                                  Grib2Descriptor<13, Grib2ProcessIdDescriptor>,
+                                                  Grib2Descriptor<16, Grib2ForecastTimeDescriptor>,
+                                                  Grib2Descriptor<20, Grib2LayerDescriptor>>;
+
+GRIB2_PRODUCT_TEMPLATE(Grib2ProductAerosol)
 }
 
 #endif

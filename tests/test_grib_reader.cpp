@@ -54,5 +54,18 @@ int main() {
         return 1;
     }
 
+    fname = "data/rrfs_2026080312f001.grib2";
+
+    try {
+        Grib2Key key;
+        Grib2File g2f = Grib2File::scan_file(fname);
+
+        std::cout << g2f;
+    }
+    catch (std::runtime_error exc) {
+        std::cout << exc.what() << std::endl;
+        return 1;
+    }
+
     return 0;
 }

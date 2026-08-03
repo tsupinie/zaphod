@@ -167,6 +167,18 @@ Grib2AggregationDescriptor Grib2AggregationDescriptor::from_buffer(const g2int* 
     };
 }
 
+Grib2AerosolDescriptor Grib2AerosolDescriptor::from_buffer(const g2int* buf) {
+    return {
+        buf[0],
+        buf[1],
+        value_from_buffer(buf + 2),
+        value_from_buffer(buf + 4),
+        buf[6],
+        value_from_buffer(buf + 7),
+        value_from_buffer(buf + 9),
+    };
+}
+
 #define GRIB2_PRODUCT_DEFINITION_CASE(name) \
     case name::template_number: \
         return std::make_shared<name>(name::from_buffer(template_buf));
@@ -179,6 +191,7 @@ std::shared_ptr<Grib2ProductDef> zaphod::select_product_def_template(g2int templ
         GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductAgg)
         GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductProbAgg)
         GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductEnsMemAgg)
+        GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductAerosol)
         default:
             throw std::runtime_error("Unknown product template number: " + std::to_string(template_num));
     }
