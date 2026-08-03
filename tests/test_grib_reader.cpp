@@ -13,6 +13,7 @@ void print_key(Grib2File& g2f, const Grib2Key& key) {
     std::vector<float> data = fields[0].get_data();
 
     std::cout << data << std::endl;
+    std::cout << fields[0].get_data_units() << std::endl;
 }
 
 int main() {
