@@ -40,6 +40,13 @@ DESCRIPTION_TRANSLATIONS = {
     }
 }
 
+def cleanup_units(units: str):
+    units = re.sub(r"([a-z]+)[\s]*-([\d/]+)", r"/ \1\2", units)
+    units = re.sub(r"([a-z]+)1", r"\1", units)
+    units = re.sub(r"[\s]*/[\s]*", "/", units)
+    units = re.sub(r"^/", "1/", units)
+    return units
+
 
 def tag_clean_strings(elem: bs4.Tag):
     return re.sub(r'[\s]*\(.*\)', '', re.sub(r'[\s]+' , ' ', "".join(elem.strings))).strip().replace('\n', ' ')
@@ -282,6 +289,7 @@ class Table_4_2(Table):
                     
                     table_id = f'4.2.{disc}.{category}'
                     row_4_2['meaning'] = DESCRIPTION_TRANSLATIONS.get(table_id, {}).get(row_4_2['meaning'], row_4_2['meaning'])
+                    row_4_2['units'] = cleanup_units(row_4_2['units'])
 
                 tables[f"{disc}.{category}"] = tab_4_2
         return Table_4_2("", tables)
