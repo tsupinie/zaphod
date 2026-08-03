@@ -8,7 +8,7 @@ using namespace std::chrono_literals;
 using namespace zaphod;
 
 Grib2ParameterDescriptor Grib2ParameterDescriptor::from_buffer(const g2int* buf) {
-    return {buf[0], buf[1], buf[2]};
+    return {buf[0], buf[1]};
 }
 
 std::string Grib2ParameterDescriptor::get_abbrev(unsigned short discipline) const {
@@ -45,7 +45,7 @@ Grib2ProbabilityDescriptor Grib2ProbabilityDescriptor::from_buffer(const g2int* 
 
 
 Grib2ProcessIdDescriptor Grib2ProcessIdDescriptor::from_buffer(const g2int* buf) {
-    return {buf[0], buf[1]};
+    return {buf[0], buf[1], buf[2]};
 }
 
 Grib2ForecastTimeDescriptor Grib2ForecastTimeDescriptor::from_buffer(const g2int* buf) {

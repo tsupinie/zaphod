@@ -16,7 +16,6 @@ namespace zaphod {
 struct Grib2ParameterDescriptor {
     g2int parameter_category;
     g2int parameter_number;
-    g2int type_of_generating_process;
 
     static Grib2ParameterDescriptor from_buffer(const g2int* buf);
     std::string get_abbrev(unsigned short discipline) const;
@@ -34,6 +33,7 @@ struct Grib2ProbabilityDescriptor {
 };
 
 struct Grib2ProcessIdDescriptor {
+    g2int type_of_generating_process;
     g2int background_process_id;
     g2int process_id;
 
@@ -253,14 +253,14 @@ std::shared_ptr<Grib2ProductDef> select_product_def_template(g2int template_num,
     };
 
 using Grib2ProductAnaFcstBase = Grib2Template<0, Grib2Descriptor<0, Grib2ParameterDescriptor>,
-                                                 Grib2Descriptor<3, Grib2ProcessIdDescriptor>,
+                                                 Grib2Descriptor<2, Grib2ProcessIdDescriptor>,
                                                  Grib2Descriptor<5, Grib2ForecastTimeDescriptor>,
                                                  Grib2Descriptor<9, Grib2LayerDescriptor>>;
 
 GRIB2_PRODUCT_TEMPLATE(Grib2ProductAnaFcst)
 
 using Grib2ProductEnsMemBase = Grib2Template<1, Grib2Descriptor<0, Grib2ParameterDescriptor>,
-                                                Grib2Descriptor<3, Grib2ProcessIdDescriptor>,
+                                                Grib2Descriptor<2, Grib2ProcessIdDescriptor>,
                                                 Grib2Descriptor<5, Grib2ForecastTimeDescriptor>,
                                                 Grib2Descriptor<9, Grib2LayerDescriptor>,
                                                 Grib2Descriptor<15, Grib2EnsembleMemberDescriptor>>;
@@ -268,7 +268,7 @@ using Grib2ProductEnsMemBase = Grib2Template<1, Grib2Descriptor<0, Grib2Paramete
 GRIB2_PRODUCT_TEMPLATE(Grib2ProductEnsMem)
 
 using Grib2ProductProbBase = Grib2Template<5, Grib2Descriptor<0, Grib2ParameterDescriptor>,
-                                              Grib2Descriptor<3, Grib2ProcessIdDescriptor>,
+                                              Grib2Descriptor<2, Grib2ProcessIdDescriptor>,
                                               Grib2Descriptor<5, Grib2ForecastTimeDescriptor>,
                                               Grib2Descriptor<9, Grib2LayerDescriptor>,
                                               Grib2Descriptor<15, Grib2ProbabilityDescriptor>>;
@@ -276,7 +276,7 @@ using Grib2ProductProbBase = Grib2Template<5, Grib2Descriptor<0, Grib2ParameterD
 GRIB2_PRODUCT_TEMPLATE(Grib2ProductProb)
 
 using Grib2ProductAggBase = Grib2Template<8, Grib2Descriptor<0, Grib2ParameterDescriptor>,
-                                             Grib2Descriptor<3, Grib2ProcessIdDescriptor>,
+                                             Grib2Descriptor<2, Grib2ProcessIdDescriptor>,
                                              Grib2Descriptor<5, Grib2ForecastTimeDescriptor>,
                                              Grib2Descriptor<9, Grib2LayerDescriptor>,
                                              Grib2Descriptor<15, Grib2AggregationDescriptor>>;
@@ -284,7 +284,7 @@ using Grib2ProductAggBase = Grib2Template<8, Grib2Descriptor<0, Grib2ParameterDe
 GRIB2_PRODUCT_TEMPLATE(Grib2ProductAgg)
 
 using Grib2ProductProbAggBase = Grib2Template<9, Grib2Descriptor<0, Grib2ParameterDescriptor>,
-                                                 Grib2Descriptor<3, Grib2ProcessIdDescriptor>,
+                                                 Grib2Descriptor<2, Grib2ProcessIdDescriptor>,
                                                  Grib2Descriptor<5, Grib2ForecastTimeDescriptor>,
                                                  Grib2Descriptor<9, Grib2LayerDescriptor>,
                                                  Grib2Descriptor<15, Grib2ProbabilityDescriptor>,
@@ -293,7 +293,7 @@ using Grib2ProductProbAggBase = Grib2Template<9, Grib2Descriptor<0, Grib2Paramet
 GRIB2_PRODUCT_TEMPLATE(Grib2ProductProbAgg)
 
 using Grib2ProductEnsMemAggBase = Grib2Template<11, Grib2Descriptor<0, Grib2ParameterDescriptor>,
-                                                    Grib2Descriptor<3, Grib2ProcessIdDescriptor>,
+                                                    Grib2Descriptor<2, Grib2ProcessIdDescriptor>,
                                                     Grib2Descriptor<5, Grib2ForecastTimeDescriptor>,
                                                     Grib2Descriptor<9, Grib2LayerDescriptor>,
                                                     Grib2Descriptor<15, Grib2EnsembleMemberDescriptor>,
