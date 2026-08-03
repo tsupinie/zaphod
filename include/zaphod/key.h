@@ -81,7 +81,7 @@ struct Grib2Key {
     static Grib2Key with_abbrev(const std::string& abbrev) {
         return Grib2Key().and_abbrev(abbrev);
     }
-    Grib2Key and_abbrev(const std::string& abbrev) const;
+    Grib2Key and_abbrev(const std::string& abbrev);
 
     static Grib2Key with_disc_cat_param(const std::string& discipline, const std::string& category, const std::string& param) { 
         return Grib2Key().and_disc_cat_param(discipline, category, param);
