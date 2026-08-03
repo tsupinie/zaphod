@@ -20,6 +20,7 @@ struct Grib2ParameterDescriptor {
 
     static Grib2ParameterDescriptor from_buffer(const g2int* buf);
     std::string get_abbrev(unsigned short discipline) const;
+    std::string get_units(unsigned short discipline) const;
 };
 
 struct Grib2ProbabilityDescriptor {
@@ -108,6 +109,7 @@ struct Grib2ProductDef {
 
     virtual std::string get_abbrev(unsigned short discipline) const = 0;
     virtual std::string get_summary_string(unsigned int discipline) const = 0;
+    virtual std::string get_data_units(unsigned int discipline) const = 0;
     virtual std::chrono::duration<unsigned int> get_forecast_time() const = 0;
     virtual Level get_level() const = 0;
     virtual Layer get_layer() const = 0;
@@ -121,6 +123,9 @@ struct Grib2ProductDef {
 
     template <size_t N, typename... Descrs>
     std::string get_summary_string(const Grib2Template<N, Descrs...>& templ) const;
+
+    template <size_t N, typename... Descrs>
+    std::string get_data_units(const Grib2Template<N, Descrs...>& templ, unsigned short discipline) const;
 
     template <size_t N, typename... Descrs>
     std::chrono::duration<unsigned int> get_forecast_time(const Grib2Template<N, Descrs...>& templ) const;
@@ -209,6 +214,14 @@ std::string Grib2ProductDef::get_summary_string(const Grib2Template<N, Descrs...
 }
 
 template <size_t N, typename... Descrs>
+std::string Grib2ProductDef::get_data_units(const Grib2Template<N, Descrs...>& templ, unsigned short discipline) const {
+    // As soon as I have a product definition template that doesn't have a Grib2ParameterDescriptor in it this line will fail to compile.
+    const auto param_descriptor = std::get<Grib2ParameterDescriptor>(templ.descriptors);
+
+    return param_descriptor.get_units(discipline);
+}
+
+template <size_t N, typename... Descrs>
 Layer Grib2ProductDef::get_layer(const Grib2Template<N, Descrs...>& templ) const {
     // As soon as I have a product definition template that doesn't have a Grib2LayerDescriptor in it this line will fail to compile.
     const auto layer_descr = std::get<Grib2LayerDescriptor>(templ.descriptors);
@@ -232,6 +245,7 @@ std::shared_ptr<Grib2ProductDef> select_product_def_template(g2int template_num,
         Grib2Key get_key() const { return Grib2ProductDef::get_key(*this); }; \
         std::string get_abbrev(unsigned short discipline) const { return Grib2ProductDef::get_abbrev(*this, discipline); }; \
         std::string get_summary_string(unsigned int discipline) const { return Grib2ProductDef::get_summary_string(*this); }; \
+        std::string get_data_units(unsigned int discipline) const { return Grib2ProductDef::get_data_units(*this, discipline); }; \
         std::chrono::duration<unsigned int> get_forecast_time() const { return Grib2ProductDef::get_forecast_time(*this); }; \
         Level get_level() const { return Grib2ProductDef::get_level(*this); } \
         Layer get_layer() const { return Grib2ProductDef::get_layer(*this); } \

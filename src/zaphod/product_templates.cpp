@@ -22,6 +22,17 @@ std::string Grib2ParameterDescriptor::get_abbrev(unsigned short discipline) cons
     }
 }
 
+std::string Grib2ParameterDescriptor::get_units(unsigned short discipline) const {
+    const auto table = g2_tables.get_table_4_2(discipline, this->parameter_category);
+    try{
+        const auto entry = table.get_entry(this->parameter_number);
+        return entry.units;
+    }
+    catch (std::runtime_error exc) {
+        return "unknown";
+    }
+}
+
 Grib2ProbabilityDescriptor Grib2ProbabilityDescriptor::from_buffer(const g2int* buf) {
     return {
         buf[0],

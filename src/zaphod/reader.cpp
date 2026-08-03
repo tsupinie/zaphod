@@ -82,6 +82,10 @@ void Grib2Field::get_data(float* buf) {
     g2_free(fld);
 }
 
+std::string Grib2Field::get_data_units() const {
+    return this->product_def->get_data_units(this->field->discipline);
+}
+
 std::string Grib2Field::noaa_abbreviation() const {
     return this->product_def->get_abbrev(this->field->discipline);
 }

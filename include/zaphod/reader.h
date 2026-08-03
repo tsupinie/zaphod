@@ -27,6 +27,7 @@ class Grib2Field {
     Grib2Field(std::vector<char> buffer, g2int ifld);
     std::vector<float> get_data();
     void get_data(float* buf);
+    std::string get_data_units() const;
 
     bool matches(const std::vector<Grib2Key>& keys) const;
     std::string noaa_abbreviation() const;
