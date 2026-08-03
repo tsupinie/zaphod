@@ -109,11 +109,16 @@ struct Grib2AerosolDescriptor {
     g2int size_interval_type;
     float first_size;
     float second_size;
+
+    static Grib2AerosolDescriptor from_buffer(const g2int* buf);
+};
+
+struct Grib2AerosolOpticsDescriptor {
     g2int wavelength_interval_type;
     float first_wavelength;
     float second_wavelength;
 
-    static Grib2AerosolDescriptor from_buffer(const g2int* buf);
+    static Grib2AerosolOpticsDescriptor from_buffer(const g2int* buf);
 };
 
 struct Grib2ProductDef {
@@ -313,13 +318,23 @@ using Grib2ProductEnsMemAggBase = Grib2Template<11, Grib2Descriptor<0, Grib2Para
 
 GRIB2_PRODUCT_TEMPLATE(Grib2ProductEnsMemAgg)
 
-using Grib2ProductAerosolBase = Grib2Template<48, Grib2Descriptor<0, Grib2ParameterDescriptor>,
+using Grib2ProductAeroAggBase = Grib2Template<46, Grib2Descriptor<0, Grib2ParameterDescriptor>,
                                                   Grib2Descriptor<2, Grib2AerosolDescriptor>,
-                                                  Grib2Descriptor<13, Grib2ProcessIdDescriptor>,
-                                                  Grib2Descriptor<16, Grib2ForecastTimeDescriptor>,
-                                                  Grib2Descriptor<20, Grib2LayerDescriptor>>;
+                                                  Grib2Descriptor<8, Grib2ProcessIdDescriptor>,
+                                                  Grib2Descriptor<11, Grib2ForecastTimeDescriptor>,
+                                                  Grib2Descriptor<15, Grib2LayerDescriptor>,
+                                                  Grib2Descriptor<21, Grib2AggregationDescriptor>>;
 
-GRIB2_PRODUCT_TEMPLATE(Grib2ProductAerosol)
+GRIB2_PRODUCT_TEMPLATE(Grib2ProductAeroAgg);
+
+using Grib2ProductAeroOpticsBase = Grib2Template<48, Grib2Descriptor<0, Grib2ParameterDescriptor>,
+                                                     Grib2Descriptor<2, Grib2AerosolDescriptor>,
+                                                     Grib2Descriptor<8, Grib2AerosolOpticsDescriptor>,
+                                                     Grib2Descriptor<13, Grib2ProcessIdDescriptor>,
+                                                     Grib2Descriptor<16, Grib2ForecastTimeDescriptor>,
+                                                     Grib2Descriptor<20, Grib2LayerDescriptor>>;
+
+GRIB2_PRODUCT_TEMPLATE(Grib2ProductAeroOptics)
 }
 
 #endif

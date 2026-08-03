@@ -173,6 +173,11 @@ Grib2AerosolDescriptor Grib2AerosolDescriptor::from_buffer(const g2int* buf) {
         buf[1],
         value_from_buffer(buf + 2),
         value_from_buffer(buf + 4),
+    };
+}
+
+Grib2AerosolOpticsDescriptor Grib2AerosolOpticsDescriptor::from_buffer(const g2int* buf) {
+    return {
         buf[6],
         value_from_buffer(buf + 7),
         value_from_buffer(buf + 9),
@@ -191,7 +196,8 @@ std::shared_ptr<Grib2ProductDef> zaphod::select_product_def_template(g2int templ
         GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductAgg)
         GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductProbAgg)
         GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductEnsMemAgg)
-        GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductAerosol)
+        GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductAeroAgg)
+        GRIB2_PRODUCT_DEFINITION_CASE(Grib2ProductAeroOptics)
         default:
             throw std::runtime_error("Unknown product template number: " + std::to_string(template_num));
     }
