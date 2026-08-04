@@ -292,6 +292,9 @@ class Table_4_2(Table):
                     row_4_2['meaning'] = DESCRIPTION_TRANSLATIONS.get(table_id, {}).get(row_4_2['meaning'], row_4_2['meaning'])
                     row_4_2['units'] = cleanup_units(row_4_2['units'])
 
+                    if row_4_2['units'] == 'dB' and disc == '0':
+                        row_4_2['units'] = 'dBZ'
+
                 tables[f"{disc}.{category}"] = tab_4_2
         return Table_4_2("", tables)
     
